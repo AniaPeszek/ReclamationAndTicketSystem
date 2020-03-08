@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <h1>{{ _('Wystąpił niespodziewany błąd'_}}</h1>
+
+    <p>{{ _('Administrator został poinformowany') }}</p>
+
+    <p>
+        <a href="{{ url_for('main.index') }}">{{ _('Wróć na stronę główną') }}</a>
+    </p>
+{% endblock %}
