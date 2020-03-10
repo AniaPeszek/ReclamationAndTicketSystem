@@ -7,6 +7,11 @@ supervisor_table = db.Table('supervisor_table',
                             db.Column('supervisor_id', db.Integer, db.ForeignKey('user.id'))
                             )
 
+received_messages_table = db.Table('received_messages_table',
+                                   db.Column('received_msg_id', db.Integer, db.ForeignKey('user.id')),
+                                   db.Column('receivers_id', db.Integer, db.ForeignKey('message.id'))
+                                   )
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -17,6 +22,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(128))
     position = db.Column(db.String(64))
     team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
+
     auth_level = db.Column(db.Integer)
     login_attempts = db.Column(db.Integer)
     supervisor = db.relationship(
@@ -27,12 +33,15 @@ class User(db.Model):
         lazy='dynamic'
     )
 
+    team = db.relationship('Team', foreign_keys=team_id, backref='team_members')
     reclamation_req = db.relationship('Reclamation', backref='reclamation_requester', lazy='dynamic')
-    ticket_req = db.relationship('Ticket', backref='ticket_requester', lazy='dynamic', foreign_keys='[Ticket.requester]')
-    ticket_ass = db.relationship('Ticket', backref='ticket_assigned', lazy='dynamic', foreign_keys='[Ticket.assigned_employee]')
+    ticket_req = db.relationship('Ticket', backref='ticket_requester', lazy='dynamic',
+                                 foreign_keys='[Ticket.requester]')
+    ticket_ass = db.relationship('Ticket', backref='ticket_assigned', lazy='dynamic',
+                                 foreign_keys='[Ticket.assigned_employee]')
     note_draf = db.relationship('Note', backref='note_drafter', lazy='dynamic')
     part_no_person = db.relationship('PartNo', backref='part_no_person_in_charge', lazy='dynamic')
-    team_lead = db.relationship('Team', backref='team_leader', lazy='dynamic', foreign_keys='[Team.team_leader_id]')
+    received_messages = db.relationship('Message', secondary=received_messages_table, backref='receivers')
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -49,7 +58,6 @@ class Reclamation(db.Model):
     part_sn = db.Column(db.Integer, db.ForeignKey('part_details.part_sn'))
     description_reclamation = db.Column(db.String(512))
     status = db.Column(db.Integer)
-    # ticket_id = db.Column(db.Integer, db.ForeignKey('ticket.id'))
 
     tickets = db.relationship('Ticket', backref='reclamation', lazy='dynamic')
 
@@ -64,11 +72,9 @@ class Ticket(db.Model):
     finished_date = db.Column(db.DateTime, index=True)
     description_ticket = db.Column(db.String(512))
     status = db.Column(db.Integer)
-    # reclamation_id = db.Column(db.Integer, db.ForeignKey) Relation already fixed -> line 33 and 47
-
     reclamation_id = db.Column(db.Integer, db.ForeignKey('reclamation.id'))
-    # reclamation_tic_id = db.relationship('Reclamation', backref='reclamation_ticket_id', lazy='dynamic')
-    note_tic_id = db.relationship('Note', backref='note_ticket_id', lazy='dynamic')
+
+    note_tic = db.relationship('Note', backref='ticket', lazy='dynamic')
 
 
 class Note(db.Model):
@@ -90,7 +96,7 @@ class Customer(db.Model):
 
 class PartDetails(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    part_no = db.Column(db.Integer, db.ForeignKey('part_no.id'))
+    part_no_id = db.Column(db.Integer, db.ForeignKey('part_no.id'))
     production_date = db.Column(db.DateTime, index=True)
     part_sn = db.Column(db.String(120), unique=True)
 
@@ -103,13 +109,21 @@ class PartNo(db.Model):
     manufacturer = db.Column(db.String(120), unique=True)
     person_in_charge = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    part_det_part_no = db.relationship('PartDetails', backref='part_details_part_no', lazy='dynamic')
+    part_no_list = db.relationship('PartDetails', backref='part_no', lazy='dynamic')
 
 
 class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     team_name = db.Column(db.String(32), unique=True)
-    team_leader_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    team_leader_id = db.Column(db.Integer, db.ForeignKey('user.id', use_alter=True, name='fk_team_leader_id'))
 
-    team_members = db.relationship('User', backref='user_team', lazy='dynamic', foreign_keys='[User.team_id]')
-    # team_members = db.relationship('User', backref='user_team', lazy='dynamic')
+    team_leader = db.relationship('User', foreign_keys=team_leader_id, post_update=True)
+
+
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String(512), nullable=False)
+    status = db.Column(db.Integer)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id', use_alter=True, name='fk_sender_id'))
+
+    sender = db.relationship('User', foreign_keys=sender_id, post_update=True)
