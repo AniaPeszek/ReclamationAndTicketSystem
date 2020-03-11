@@ -1,6 +1,16 @@
 from flask import current_app
-from app import db
+from werkzeug.security import generate_password_hash, check_password_hash
+from app import db, login
 from datetime import datetime, timedelta
+import jwt
+from time import time
+from flask_login import UserMixin
+
+
+@login.user_loader
+def load_user(id):
+    return User.query.get(int(id))
+
 
 supervisor_table = db.Table('supervisor_table',
                             db.Column('employee_id', db.Integer, db.ForeignKey('user.id')),
@@ -13,7 +23,7 @@ received_messages_table = db.Table('received_messages_table',
                                    )
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(64))
     last_name = db.Column(db.String(64))
@@ -46,35 +56,79 @@ class User(db.Model):
     def __repr__(self):
         return f'<User {self.username}>'
 
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def get_reset_password_token(self, expires_in=600):
+        return jwt.encode(
+            {
+                'reset_password': self.id,
+                'exp': time() + expires_in
+            },
+            current_app.config['SECRET_KEY'],
+            algorithm='HS256'
+        ).decode('utf-8')
+
+    @staticmethod
+    def verify_password_token(token):
+        try:
+            id = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])['reset_password']
+        except:
+            return
+        return User.query.get(id)
+
 
 class Reclamation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    requester = db.Column(db.Integer, db.ForeignKey('user.id'))
-    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
-    informed_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    # due_date = db.Column(db.DateTime, index=True, default=(informed_date + timedelta(days=30)))
+    requester = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    informed_date = db.Column(db.DateTime, index=True, nullable=False)
     due_date = db.Column(db.DateTime, index=True)
     finished_date = db.Column(db.DateTime, index=True)
-    part_sn = db.Column(db.Integer, db.ForeignKey('part_details.part_sn'))
-    description_reclamation = db.Column(db.String(512))
-    status = db.Column(db.Integer)
+    part_sn = db.Column(db.Integer, db.ForeignKey('part_details.part_sn'), nullable=False)
+    description_reclamation = db.Column(db.String(512), nullable=False)
+    status = db.Column(db.Integer, nullable=False)
 
     tickets = db.relationship('Ticket', backref='reclamation', lazy='dynamic')
+
+    def __init__(self, requester, customer_id, informed_date, part_sn,
+                 description_reclamation, status, due_date=None, finished_date=None):
+        self.requester = requester
+        self.customer_id = customer_id
+        self.informed_date = informed_date
+        self.due_date = due_date if due_date else informed_date + timedelta(days=30)
+        self.finished_date = finished_date
+        self.part_sn = part_sn
+        self.description_reclamation = description_reclamation
+        self.status = status
 
 
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    requester = db.Column(db.Integer, db.ForeignKey('user.id'))
-    assigned_employee = db.Column(db.Integer, db.ForeignKey('user.id'))
-    creation_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    # due_date = db.Column(db.DateTime, index=True, default=(creation_date + timedelta(days=30)))
+    requester = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    assigned_employee = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    creation_date = db.Column(db.DateTime, index=True)
     due_date = db.Column(db.DateTime, index=True)
     finished_date = db.Column(db.DateTime, index=True)
-    description_ticket = db.Column(db.String(512))
-    status = db.Column(db.Integer)
-    reclamation_id = db.Column(db.Integer, db.ForeignKey('reclamation.id'))
+    description_ticket = db.Column(db.String(512), nullable=False)
+    status = db.Column(db.Integer, nullable=False)
+    reclamation_id = db.Column(db.Integer, db.ForeignKey('reclamation.id'), nullable=False)
 
     note_tic = db.relationship('Note', backref='ticket', lazy='dynamic')
+
+    def __init__(self, requester, assigned_employee, description_ticket, status, reclamation_id,
+                 due_date=None, finished_date=None):
+        self.requester = requester
+        self.assigned_employee = assigned_employee
+        self.creation_date = datetime.utcnow()
+        self.due_date = due_date if due_date else self.creation_date + timedelta(days=30)
+        self.finished_date = finished_date
+        self.description_ticket = description_ticket
+        self.status = status
+        self.reclamation_id = reclamation_id
 
 
 class Note(db.Model):

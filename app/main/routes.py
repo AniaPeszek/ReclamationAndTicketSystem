@@ -3,8 +3,10 @@ from flask import render_template
 from flask import g
 from flask_babel import _, get_locale
 
+
 from app import get_locale
 from app.main import bp
+
 
 
 @bp.before_app_request
