@@ -1,8 +1,8 @@
-"""'initial'
+"""create db
 
-Revision ID: ef97577bebd1
+Revision ID: d00ede73d9b4
 Revises: 
-Create Date: 2020-03-10 12:25:19.639754
+Create Date: 2020-03-12 10:44:59.362717
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'ef97577bebd1'
+revision = 'd00ede73d9b4'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -35,6 +35,13 @@ def upgrade():
     sa.ForeignKeyConstraint(['sender_id'], ['user.id'], name='fk_sender_id', use_alter=True),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('role',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=80), nullable=True),
+    sa.Column('description', sa.String(length=255), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('name')
+    )
     op.create_table('team',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('team_name', sa.String(length=32), nullable=True),
@@ -49,7 +56,7 @@ def upgrade():
     sa.Column('last_name', sa.String(length=64), nullable=True),
     sa.Column('username', sa.String(length=64), nullable=True),
     sa.Column('email', sa.String(length=120), nullable=True),
-    sa.Column('password_hash', sa.String(length=128), nullable=True),
+    sa.Column('password', sa.String(length=128), nullable=True),
     sa.Column('position', sa.String(length=64), nullable=True),
     sa.Column('team_id', sa.Integer(), nullable=True),
     sa.Column('auth_level', sa.Integer(), nullable=True),
@@ -75,6 +82,12 @@ def upgrade():
     sa.ForeignKeyConstraint(['received_msg_id'], ['user.id'], ),
     sa.ForeignKeyConstraint(['receivers_id'], ['message.id'], )
     )
+    op.create_table('roles_users',
+    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.Column('role_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['role_id'], ['role.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], )
+    )
     op.create_table('supervisor_table',
     sa.Column('employee_id', sa.Integer(), nullable=True),
     sa.Column('supervisor_id', sa.Integer(), nullable=True),
@@ -93,14 +106,14 @@ def upgrade():
     op.create_index(op.f('ix_part_details_production_date'), 'part_details', ['production_date'], unique=False)
     op.create_table('reclamation',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('requester', sa.Integer(), nullable=True),
-    sa.Column('customer_id', sa.Integer(), nullable=True),
-    sa.Column('informed_date', sa.DateTime(), nullable=True),
+    sa.Column('requester', sa.Integer(), nullable=False),
+    sa.Column('customer_id', sa.Integer(), nullable=False),
+    sa.Column('informed_date', sa.DateTime(), nullable=False),
     sa.Column('due_date', sa.DateTime(), nullable=True),
     sa.Column('finished_date', sa.DateTime(), nullable=True),
-    sa.Column('part_sn', sa.Integer(), nullable=True),
-    sa.Column('description_reclamation', sa.String(length=512), nullable=True),
-    sa.Column('status', sa.Integer(), nullable=True),
+    sa.Column('part_sn', sa.Integer(), nullable=False),
+    sa.Column('description_reclamation', sa.String(length=512), nullable=False),
+    sa.Column('status', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['customer_id'], ['customer.id'], ),
     sa.ForeignKeyConstraint(['part_sn'], ['part_details.part_sn'], ),
     sa.ForeignKeyConstraint(['requester'], ['user.id'], ),
@@ -111,14 +124,14 @@ def upgrade():
     op.create_index(op.f('ix_reclamation_informed_date'), 'reclamation', ['informed_date'], unique=False)
     op.create_table('ticket',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('requester', sa.Integer(), nullable=True),
-    sa.Column('assigned_employee', sa.Integer(), nullable=True),
+    sa.Column('requester', sa.Integer(), nullable=False),
+    sa.Column('assigned_employee', sa.Integer(), nullable=False),
     sa.Column('creation_date', sa.DateTime(), nullable=True),
     sa.Column('due_date', sa.DateTime(), nullable=True),
     sa.Column('finished_date', sa.DateTime(), nullable=True),
-    sa.Column('description_ticket', sa.String(length=512), nullable=True),
-    sa.Column('status', sa.Integer(), nullable=True),
-    sa.Column('reclamation_id', sa.Integer(), nullable=True),
+    sa.Column('description_ticket', sa.String(length=512), nullable=False),
+    sa.Column('status', sa.Integer(), nullable=False),
+    sa.Column('reclamation_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['assigned_employee'], ['user.id'], ),
     sa.ForeignKeyConstraint(['reclamation_id'], ['reclamation.id'], ),
     sa.ForeignKeyConstraint(['requester'], ['user.id'], ),
@@ -156,12 +169,14 @@ def downgrade():
     op.drop_index(op.f('ix_part_details_production_date'), table_name='part_details')
     op.drop_table('part_details')
     op.drop_table('supervisor_table')
+    op.drop_table('roles_users')
     op.drop_table('received_messages_table')
     op.drop_table('part_no')
     op.drop_index(op.f('ix_user_username'), table_name='user')
     op.drop_index(op.f('ix_user_email'), table_name='user')
     op.drop_table('user')
     op.drop_table('team')
+    op.drop_table('role')
     op.drop_table('message')
     op.drop_index(op.f('ix_customer_email'), table_name='customer')
     op.drop_table('customer')

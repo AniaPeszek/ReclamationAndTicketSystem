@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired,  Email, EqualTo
 
-from flask_babel import _, lazy_gettext as _l
+from flask_babelex import _, lazy_gettext as _l
 
 
 class LoginForm(FlaskForm):

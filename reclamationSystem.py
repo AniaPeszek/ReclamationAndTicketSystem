@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import User, Customer, Note, PartDetails, PartNo, Reclamation, Team, Ticket, Message
+from app.models import User, Customer, Note, PartDetails, PartNo, Reclamation, Team, Ticket, Message, Role
 
 app = create_app()
 
@@ -15,4 +15,5 @@ def make_shell_context():
             'Reclamation': Reclamation,
             'Team': Team,
             'Ticket': Ticket,
-            'Message': Message}
+            'Message': Message,
+            'Role': Role}

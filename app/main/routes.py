@@ -1,7 +1,7 @@
 from flask import render_template
 
 from flask import g
-from flask_babel import _, get_locale
+from flask_babelex import _, get_locale
 
 
 from app import get_locale

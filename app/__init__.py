@@ -1,9 +1,11 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_babel import Babel
+from flask_babelex import Babel
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
+from flask_security import Security
+from flask_admin import Admin
 from flask_login import LoginManager
 
 from config import Config
@@ -16,7 +18,9 @@ bootstrap = Bootstrap()
 babel = Babel()
 mail = Mail()
 login = LoginManager()
-
+admin = Admin()
+security = Security()
+from app.models import user_datastore
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -27,6 +31,8 @@ def create_app(config_class=Config):
     babel.init_app(app)
     mail.init_app(app)
     login.init_app(app)
+    admin.init_app(app)
+    security.init_app(app, user_datastore)
 
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)

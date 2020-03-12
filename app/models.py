@@ -6,6 +6,16 @@ import jwt
 from time import time
 from flask_login import UserMixin
 
+from flask_admin.contrib.sqla import ModelView
+from app import admin
+from flask_admin import BaseView, expose
+from flask_admin.contrib import sqla
+from flask_security import RoleMixin, SQLAlchemyUserDatastore, current_user, utils
+from wtforms import PasswordField
+from flask import abort
+
+from flask import render_template
+
 
 @login.user_loader
 def load_user(id):
@@ -22,6 +32,12 @@ received_messages_table = db.Table('received_messages_table',
                                    db.Column('receivers_id', db.Integer, db.ForeignKey('message.id'))
                                    )
 
+roles_users = db.Table(
+    'roles_users',
+    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
+    db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
+)
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -29,7 +45,7 @@ class User(UserMixin, db.Model):
     last_name = db.Column(db.String(64))
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
-    password_hash = db.Column(db.String(128))
+    password = db.Column(db.String(128))
     position = db.Column(db.String(64))
     team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
 
@@ -41,6 +57,11 @@ class User(UserMixin, db.Model):
         secondaryjoin=(supervisor_table.c.employee_id == id),
         backref=db.backref('subordinate', lazy='dynamic'),
         lazy='dynamic'
+    )
+    roles = db.relationship(
+        'Role',
+        secondary=roles_users,
+        backref=db.backref('users', lazy='dynamic')
     )
 
     team = db.relationship('Team', foreign_keys=team_id, backref='team_members')
@@ -57,10 +78,10 @@ class User(UserMixin, db.Model):
         return f'<User {self.username}>'
 
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password = generate_password_hash(password)
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(self.password, password)
 
     def get_reset_password_token(self, expires_in=600):
         return jwt.encode(
@@ -79,6 +100,11 @@ class User(UserMixin, db.Model):
         except:
             return
         return User.query.get(id)
+
+    def has_role(self, role):
+        if role in self.roles:
+            return True
+        return False
 
 
 class Reclamation(db.Model):
@@ -181,3 +207,89 @@ class Message(db.Model):
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id', use_alter=True, name='fk_sender_id'))
 
     sender = db.relationship('User', foreign_keys=sender_id, post_update=True)
+
+
+class Role(db.Model, RoleMixin):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+
+    # __str__ is required by Flask-Admin, so we can have human-readable values for the Role when editing a User.
+    def __str__(self):
+        return self.name
+
+    # __hash__ is required to avoid the exception TypeError: unhashable type: 'Role' when saving a User
+    def __hash__(self):
+        return hash(self.name)
+
+
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+
+
+class NotificationsView(BaseView):
+    @expose('/')
+    def index(self):
+        return self.render('admin/notify.html')
+
+    def is_accessible(self):
+        return current_user.has_role('admin')
+
+
+class UserAdmin(sqla.ModelView):
+    page_size = 50  # the number of entries to display on the list view
+    column_exclude_list = ('password',)
+    form_excluded_columns = ('password',)
+    # Automatically display human-readable names for the current and available Roles when creating or editing a User
+    column_auto_select_related = True
+
+    def is_accessible(self):
+        return current_user.has_role('admin')
+
+    # On the form for creating or editing a User, don't display a field corresponding to the model's password field.
+    # There are two reasons for this. First, we want to encrypt the password before storing in the database. Second,
+    # we want to use a password field (with the input masked) rather than a regular text field.
+    def scaffold_form(self):
+        # Start with the standard form as provided by Flask-Admin. We've already told Flask-Admin to exclude the
+        # password field from this form.
+        form_class = super(UserAdmin, self).scaffold_form()
+
+        # Add a password field, naming it "password2" and labeling it "New Password".
+        form_class.password2 = PasswordField('New Password')
+        return form_class
+
+    # This callback executes when the user saves changes to a newly-created or edited User -- before the changes are
+    # committed to the database.
+    def on_model_change(self, form, model, is_created):
+        # If the password field isn't blank...
+        if len(model.password2):
+            # ... then encrypt the new password prior to storing it in the database. If the password field is blank,
+            # the existing password in the database will be retained.
+            model.password = generate_password_hash(model.password2)
+
+
+class RoleAdmin(sqla.ModelView):
+    page_size = 50  # the number of entries to display on the list view
+    can_delete = False  # disable model deletion
+    def is_accessible(self):
+        return current_user.has_role('admin')
+        # return True
+
+    def inaccessible_callback(self, name, **kwargs):
+        # redirect to login page if user doesn't have access
+        # return redirect(url_for('login', next=request.url))
+        return render_template('index.html')
+
+
+admin.add_view(UserAdmin(User, db.session))
+admin.add_view(RoleAdmin(Role, db.session))
+admin.add_view(NotificationsView(name='Notifications', endpoint='notify'))
+
+# from flask_admin import helpers as admin_helpers
+# @security.context_processor
+# def security_context_processor():
+#     return dict(
+#         admin_base_template=admin.base_template,
+#         admin_view=admin.index_view,
+#         h=admin_helpers,
+#         get_url=url_for
+#     )
