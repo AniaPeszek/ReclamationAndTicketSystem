@@ -18,9 +18,9 @@ bootstrap = Bootstrap()
 babel = Babel()
 mail = Mail()
 login = LoginManager()
-admin = Admin()
+admin = Admin(name='ERP - Admin', template_mode='bootstrap3')
 security = Security()
-from app.models import user_datastore
+from app.models import user_datastore, MyAdminIndexView
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -31,7 +31,7 @@ def create_app(config_class=Config):
     babel.init_app(app)
     mail.init_app(app)
     login.init_app(app)
-    admin.init_app(app)
+    admin.init_app(app, index_view=MyAdminIndexView())
     security.init_app(app, user_datastore)
 
     from app.main import bp as main_bp

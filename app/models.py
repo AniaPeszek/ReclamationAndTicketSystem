@@ -8,13 +8,15 @@ from flask_login import UserMixin
 
 from flask_admin.contrib.sqla import ModelView
 from app import admin
-from flask_admin import BaseView, expose
+from flask_admin import BaseView, expose, AdminIndexView
 from flask_admin.contrib import sqla
+from flask_admin.menu import MenuLink
 from flask_security import RoleMixin, SQLAlchemyUserDatastore, current_user, utils
-from wtforms import PasswordField
+from wtforms import PasswordField, SelectField
+from flask_admin.form import rules
 from flask import abort
 
-from flask import render_template
+from flask import render_template, redirect, url_for, request
 
 
 @login.user_loader
@@ -235,12 +237,19 @@ class NotificationsView(BaseView):
         return current_user.has_role('admin')
 
 
-class UserAdmin(sqla.ModelView):
+class UserAdminView(sqla.ModelView):
     page_size = 50  # the number of entries to display on the list view
     column_exclude_list = ('password',)
     form_excluded_columns = ('password',)
+    # order of fields in form
+    form_rules = [
+        rules.FieldSet(('first_name', 'last_name', 'username', 'email', 'team', 'supervisor', 'position', 'subordinate',
+                        'roles', 'password2', 'reclamation_req', 'ticket_ass', 'part_no_person'), 'User')
+    ]
     # Automatically display human-readable names for the current and available Roles when creating or editing a User
     column_auto_select_related = True
+    column_searchable_list = ('username', 'last_name', 'first_name', 'email')
+    column_default_sort = ('last_name', True)
 
     def is_accessible(self):
         return current_user.has_role('admin')
@@ -251,10 +260,11 @@ class UserAdmin(sqla.ModelView):
     def scaffold_form(self):
         # Start with the standard form as provided by Flask-Admin. We've already told Flask-Admin to exclude the
         # password field from this form.
-        form_class = super(UserAdmin, self).scaffold_form()
+        form_class = super(UserAdminView, self).scaffold_form()
 
         # Add a password field, naming it "password2" and labeling it "New Password".
         form_class.password2 = PasswordField('New Password')
+
         return form_class
 
     # This callback executes when the user saves changes to a newly-created or edited User -- before the changes are
@@ -266,30 +276,143 @@ class UserAdmin(sqla.ModelView):
             # the existing password in the database will be retained.
             model.password = generate_password_hash(model.password2)
 
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('auth.login', next=request.url))
 
-class RoleAdmin(sqla.ModelView):
+
+class RoleAdminView(sqla.ModelView):
     page_size = 50  # the number of entries to display on the list view
     can_delete = False  # disable model deletion
+
     def is_accessible(self):
         return current_user.has_role('admin')
-        # return True
 
     def inaccessible_callback(self, name, **kwargs):
-        # redirect to login page if user doesn't have access
-        # return redirect(url_for('login', next=request.url))
-        return render_template('index.html')
+        return redirect(url_for('auth.login', next=request.url))
 
 
-admin.add_view(UserAdmin(User, db.session))
-admin.add_view(RoleAdmin(Role, db.session))
+class MyAdminIndexView(AdminIndexView):
+
+    def is_accessible(self):
+        return current_user.has_role('admin')
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('auth.login', next=request.url))
+
+
+class ReclamationAdminView(sqla.ModelView):
+    page_size = 50
+    form_overrides = dict(status=SelectField)
+    form_args = dict(
+        status=dict(
+            choices=[(0, 'waiting'), (1, 'in_progress'), (2, 'finished')]
+        ))
+
+    def is_accessible(self):
+        return current_user.has_role('admin')
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('auth.login', next=request.url))
+
+
+class TicketAdminView(sqla.ModelView):
+    page_size = 50
+    form_overrides = dict(status=SelectField)
+    form_args = dict(
+        status=dict(
+            choices=[(0, 'waiting'), (1, 'in_progress'), (2, 'finished')]
+        ))
+
+    def is_accessible(self):
+        return current_user.has_role('admin')
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('auth.login', next=request.url))
+
+
+class NoteAdminView(sqla.ModelView):
+    page_size = 50
+
+    def is_accessible(self):
+        return current_user.has_role('admin')
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('auth.login', next=request.url))
+
+
+class CustomerAdminView(sqla.ModelView):
+    page_size = 50
+
+    def is_accessible(self):
+        return current_user.has_role('admin')
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('auth.login', next=request.url))
+
+
+class PartDetailsAdminView(sqla.ModelView):
+    page_size = 50
+
+    def is_accessible(self):
+        return current_user.has_role('admin')
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('auth.login', next=request.url))
+
+
+class PartNoAdminView(sqla.ModelView):
+    page_size = 50
+
+    def is_accessible(self):
+        return current_user.has_role('admin')
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('auth.login', next=request.url))
+
+
+class TeamAdminView(sqla.ModelView):
+    page_size = 50
+
+    def is_accessible(self):
+        return current_user.has_role('admin')
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('auth.login', next=request.url))
+
+
+class MessageAdminView(sqla.ModelView):
+    page_size = 50
+
+    def is_accessible(self):
+        return current_user.has_role('admin')
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('auth.login', next=request.url))
+
+
+class LoginMenuLink(MenuLink):
+
+    def is_accessible(self):
+        return not current_user.is_authenticated
+
+
+class LogoutMenuLink(MenuLink):
+
+    def is_accessible(self):
+        return current_user.is_authenticated
+
+
+admin.add_view(UserAdminView(User, db.session))
+admin.add_view(RoleAdminView(Role, db.session))
+admin.add_view(ReclamationAdminView(Reclamation, db.session))
+admin.add_view(TicketAdminView(Ticket, db.session))
+admin.add_view(TeamAdminView(Team, db.session))
+admin.add_view(NoteAdminView(Note, db.session))
+admin.add_view(CustomerAdminView(Customer, db.session))
+admin.add_view(PartDetailsAdminView(PartDetails, db.session))
+admin.add_view(PartNoAdminView(PartNo, db.session))
+# admin.add_view(MessageAdminView(Message, db.session))
 admin.add_view(NotificationsView(name='Notifications', endpoint='notify'))
 
-# from flask_admin import helpers as admin_helpers
-# @security.context_processor
-# def security_context_processor():
-#     return dict(
-#         admin_base_template=admin.base_template,
-#         admin_view=admin.index_view,
-#         h=admin_helpers,
-#         get_url=url_for
-#     )
+admin.add_link(LogoutMenuLink(name='Logout', category='', url="/logout"))
+admin.add_link(LoginMenuLink(name='Login', category='', url="/login"))
