@@ -1,8 +1,8 @@
-"""first migration
+"""db with messages
 
-Revision ID: 9a73f4737871
+Revision ID: 6a19c247460c
 Revises: 
-Create Date: 2020-03-18 08:13:07.638410
+Create Date: 2020-03-18 11:39:27.072207
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9a73f4737871'
+revision = '6a19c247460c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -27,14 +27,6 @@ def upgrade():
     sa.UniqueConstraint('name')
     )
     op.create_index(op.f('ix_customer_email'), 'customer', ['email'], unique=True)
-    op.create_table('message',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('content', sa.String(length=512), nullable=False),
-    sa.Column('status', sa.Integer(), nullable=True),
-    sa.Column('sender_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['sender_id'], ['user.id'], name='fk_sender_id', use_alter=True),
-    sa.PrimaryKeyConstraint('id')
-    )
     op.create_table('role',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=80), nullable=True),
@@ -65,12 +57,25 @@ def upgrade():
     sa.Column('auth_level', sa.Integer(), nullable=True),
     sa.Column('login_attempts', sa.Integer(), nullable=True),
     sa.Column('role_id', sa.Integer(), nullable=True),
+    sa.Column('last_message_read_time', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['role_id'], ['role.id'], ),
     sa.ForeignKeyConstraint(['team_id'], ['team.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_user_email'), 'user', ['email'], unique=True)
     op.create_index(op.f('ix_user_username'), 'user', ['username'], unique=True)
+    op.create_table('message',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('sender_id', sa.Integer(), nullable=True),
+    sa.Column('recipient_id', sa.Integer(), nullable=True),
+    sa.Column('content', sa.String(length=512), nullable=False),
+    sa.Column('status', sa.Integer(), nullable=True),
+    sa.Column('timestamp', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['recipient_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['sender_id'], ['user.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_message_timestamp'), 'message', ['timestamp'], unique=False)
     op.create_table('part_no',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('model', sa.String(length=120), nullable=True),
@@ -80,12 +85,6 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('manufacturer'),
     sa.UniqueConstraint('model')
-    )
-    op.create_table('received_messages_table',
-    sa.Column('received_msg_id', sa.Integer(), nullable=True),
-    sa.Column('receivers_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['received_msg_id'], ['user.id'], ),
-    sa.ForeignKeyConstraint(['receivers_id'], ['message.id'], )
     )
     op.create_table('supervisor_table',
     sa.Column('employee_id', sa.Integer(), nullable=True),
@@ -168,15 +167,15 @@ def downgrade():
     op.drop_index(op.f('ix_part_details_production_date'), table_name='part_details')
     op.drop_table('part_details')
     op.drop_table('supervisor_table')
-    op.drop_table('received_messages_table')
     op.drop_table('part_no')
+    op.drop_index(op.f('ix_message_timestamp'), table_name='message')
+    op.drop_table('message')
     op.drop_index(op.f('ix_user_username'), table_name='user')
     op.drop_index(op.f('ix_user_email'), table_name='user')
     op.drop_table('user')
     op.drop_table('team')
     op.drop_index(op.f('ix_role_default'), table_name='role')
     op.drop_table('role')
-    op.drop_table('message')
     op.drop_index(op.f('ix_customer_email'), table_name='customer')
     op.drop_table('customer')
     # ### end Alembic commands ###

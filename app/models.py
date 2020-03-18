@@ -17,10 +17,11 @@ supervisor_table = db.Table('supervisor_table',
                             db.Column('supervisor_id', db.Integer, db.ForeignKey('user.id'))
                             )
 
-received_messages_table = db.Table('received_messages_table',
-                                   db.Column('received_msg_id', db.Integer, db.ForeignKey('user.id')),
-                                   db.Column('receivers_id', db.Integer, db.ForeignKey('message.id'))
-                                   )
+
+# received_messages_table = db.Table('received_messages_table',
+#                                    db.Column('received_msg_id', db.Integer, db.ForeignKey('user.id')),
+#                                    db.Column('receivers_id', db.Integer, db.ForeignKey('message.id'))
+#                                    )
 
 
 class User(UserMixin, db.Model):
@@ -52,7 +53,20 @@ class User(UserMixin, db.Model):
                                  foreign_keys='[Ticket.assigned_employee]')
     note_draf = db.relationship('Note', backref='note_drafter', lazy='dynamic')
     part_no_person = db.relationship('PartNo', backref='part_no_person_in_charge', lazy='dynamic')
-    received_messages = db.relationship('Message', secondary=received_messages_table, backref='receivers')
+    # received_messages = db.relationship('Message', secondary=received_messages_table, backref='receivers')
+
+    messages_sent = db.relationship('Message',
+                                    foreign_keys='Message.sender_id',
+                                    backref='author', lazy='dynamic')
+    messages_received = db.relationship('Message',
+                                        foreign_keys='Message.recipient_id',
+                                        backref='recipient', lazy='dynamic')
+    last_message_read_time = db.Column(db.DateTime)
+
+    def new_messages(self):
+        last_read_time = self.last_message_read_time or datetime(1900, 1, 1)
+        return Message.query.filter_by(recipient=self).filter(
+            Message.timestamp > last_read_time).count()
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -96,6 +110,20 @@ class User(UserMixin, db.Model):
 
     def is_administrator(self):
         return self.can(Permission.ADMIN)
+
+    @staticmethod
+    def insert_first_users():
+        admin = User(username='admin')
+        user = User(username='user')
+        admin.set_password('admin')
+        user.set_password('user')
+        role_admin = Role.query.filter_by(name='admin').first()
+        admin.role = role_admin
+        role_user = Role.query.filter_by(name='user').first()
+        user.role = role_user
+        db.session.add(admin)
+        db.session.add(user)
+        db.session.commit()
 
 
 class Reclamation(db.Model):
@@ -193,11 +221,14 @@ class Team(db.Model):
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     content = db.Column(db.String(512), nullable=False)
     status = db.Column(db.Integer)
-    sender_id = db.Column(db.Integer, db.ForeignKey('user.id', use_alter=True, name='fk_sender_id'))
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
-    sender = db.relationship('User', foreign_keys=sender_id, post_update=True)
+    def __repr__(self):
+        return '<Message {}>'.format(self.content)
 
 
 class Role(db.Model):

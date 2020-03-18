@@ -9,6 +9,7 @@ from app.main import bp
 
 
 
+
 @bp.before_app_request
 def before_request():
     g.locale = str(get_locale())
@@ -25,3 +26,6 @@ def index():
 @login_required
 def test():
     return '<h1>This is test</h1>'
+
+
+
