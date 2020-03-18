@@ -1,6 +1,6 @@
 from flask import render_template, redirect, flash, url_for
 from flask import request
-from flask_security import current_user, login_user, logout_user
+from flask_login import current_user, login_user, logout_user
 from werkzeug.urls import url_parse
 
 from app import db

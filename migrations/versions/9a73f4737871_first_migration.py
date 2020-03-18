@@ -1,8 +1,8 @@
-"""create db
+"""first migration
 
-Revision ID: d00ede73d9b4
+Revision ID: 9a73f4737871
 Revises: 
-Create Date: 2020-03-12 10:44:59.362717
+Create Date: 2020-03-18 08:13:07.638410
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'd00ede73d9b4'
+revision = '9a73f4737871'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -39,9 +39,12 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=80), nullable=True),
     sa.Column('description', sa.String(length=255), nullable=True),
+    sa.Column('default', sa.Boolean(), nullable=True),
+    sa.Column('permissions', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
     )
+    op.create_index(op.f('ix_role_default'), 'role', ['default'], unique=False)
     op.create_table('team',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('team_name', sa.String(length=32), nullable=True),
@@ -61,6 +64,8 @@ def upgrade():
     sa.Column('team_id', sa.Integer(), nullable=True),
     sa.Column('auth_level', sa.Integer(), nullable=True),
     sa.Column('login_attempts', sa.Integer(), nullable=True),
+    sa.Column('role_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['role_id'], ['role.id'], ),
     sa.ForeignKeyConstraint(['team_id'], ['team.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -81,12 +86,6 @@ def upgrade():
     sa.Column('receivers_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['received_msg_id'], ['user.id'], ),
     sa.ForeignKeyConstraint(['receivers_id'], ['message.id'], )
-    )
-    op.create_table('roles_users',
-    sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.Column('role_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['role_id'], ['role.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], )
     )
     op.create_table('supervisor_table',
     sa.Column('employee_id', sa.Integer(), nullable=True),
@@ -169,13 +168,13 @@ def downgrade():
     op.drop_index(op.f('ix_part_details_production_date'), table_name='part_details')
     op.drop_table('part_details')
     op.drop_table('supervisor_table')
-    op.drop_table('roles_users')
     op.drop_table('received_messages_table')
     op.drop_table('part_no')
     op.drop_index(op.f('ix_user_username'), table_name='user')
     op.drop_index(op.f('ix_user_email'), table_name='user')
     op.drop_table('user')
     op.drop_table('team')
+    op.drop_index(op.f('ix_role_default'), table_name='role')
     op.drop_table('role')
     op.drop_table('message')
     op.drop_index(op.f('ix_customer_email'), table_name='customer')

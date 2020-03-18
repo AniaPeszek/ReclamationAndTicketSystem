@@ -20,5 +20,3 @@ class Config:
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = ['mail@example.com']
 
-    SECURITY_URL_PREFIX = "/admin"
-    SECURITY_PASSWORD_SALT = "secretsalt"

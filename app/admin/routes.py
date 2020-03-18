@@ -4,17 +4,16 @@ from app import admin
 from flask_admin import BaseView, expose, AdminIndexView
 from flask_admin.contrib import sqla
 from flask_admin.menu import MenuLink
-from flask_security import current_user
+from flask_login import current_user
 from wtforms import PasswordField, SelectField
 from flask_admin.form import rules
-from flask import redirect, url_for, request
-
+from app.permission_decorators import admin_required
 from app.models import User, Role, Reclamation, Ticket, Note, PartNo, PartDetails, Customer, Team
 
 
 def init_admin(f_admin):
     admin.index_view = MyAdminIndexView()
-    f_admin.add_view(UserAdminView(User, db.session))
+    f_admin.add_view(UserAdminView(User, db.session, endpoint="user"))
     f_admin.add_view(RoleAdminView(Role, db.session))
     f_admin.add_view(ReclamationAdminView(Reclamation, db.session))
     f_admin.add_view(TicketAdminView(Ticket, db.session))
@@ -23,39 +22,37 @@ def init_admin(f_admin):
     f_admin.add_view(CustomerAdminView(Customer, db.session))
     f_admin.add_view(PartDetailsAdminView(PartDetails, db.session))
     f_admin.add_view(PartNoAdminView(PartNo, db.session))
-    # nie wiem czy chcemy pokazywać messeges, potraktowałabym je jako prywatne
-    # admin.add_view(MessageAdminView(Message, db.session))
     f_admin.add_view(NotificationsView(name='Notifications', endpoint='notify'))
-    f_admin.add_link(LogoutMenuLink(name='Logout', category='', url="/logout"))
-    f_admin.add_link(LoginMenuLink(name='Login', category='', url="/login"))
+    f_admin.add_link(LogoutMenuLink(name='Logout', category='', url="/auth/logout"))
+    f_admin.add_link(LoginMenuLink(name='Login', category='', url="/auth/login"))
 
 
 # dodatkowy widok, jak nie potrzebujemy to można usunąć
 class NotificationsView(BaseView):
+    @admin_required
     @expose('/')
     def index(self):
         return self.render('admin/notify.html')
 
-    def is_accessible(self):
-        return current_user.has_role('admin')
-
 
 class UserAdminView(sqla.ModelView):
+    @expose('/')
+    @admin_required
+    def index_view(self):
+        return super(sqla.ModelView, self).index_view()
+
     page_size = 50
     column_exclude_list = ('password',)
     form_excluded_columns = ('password',)
     # order of fields in form
     form_rules = [
         rules.FieldSet(('first_name', 'last_name', 'username', 'email', 'team', 'supervisor', 'position', 'subordinate',
-                        'roles', 'password2', 'reclamation_req', 'ticket_ass', 'part_no_person'), 'User')
+                        'role', 'password2', 'reclamation_req', 'ticket_ass', 'part_no_person'), 'User')
     ]
     # Automatically display human-readable names for the current and available Roles when creating or editing a User
     column_auto_select_related = True
     column_searchable_list = ('username', 'last_name', 'first_name', 'email')
     column_default_sort = ('last_name', True)
-
-    def is_accessible(self):
-        return current_user.has_role('admin')
 
     # On the form for creating or editing a User, don't display a field corresponding to the model's password field.
     # There are two reasons for this. First, we want to encrypt the password before storing in the database. Second,
@@ -79,46 +76,47 @@ class UserAdminView(sqla.ModelView):
             # the existing password in the database will be retained.
             model.password = generate_password_hash(model.password2)
 
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('auth.login', next=request.url))
-
 
 class RoleAdminView(sqla.ModelView):
+
+    @expose('/')
+    @admin_required
+    def index_view(self):
+        return super(sqla.ModelView, self).index_view()
+
     page_size = 50
     can_delete = False  # disable model deletion
 
-    def is_accessible(self):
-        return current_user.has_role('admin')
-
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('auth.login', next=request.url))
-
 
 class MyAdminIndexView(AdminIndexView):
-
-    def is_accessible(self):
-        return current_user.has_role('admin')
-
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('auth.login', next=request.url))
+    @admin_required
+    @expose('/')
+    def index(self):
+        return self.render('admin/index.html')
 
 
 class ReclamationAdminView(sqla.ModelView):
+
+    @expose('/')
+    @admin_required
+    def index_view(self):
+        return super(sqla.ModelView, self).index_view()
+
     page_size = 50
     form_overrides = dict(status=SelectField)
     form_args = dict(
         status=dict(
             choices=[(0, 'waiting'), (1, 'in_progress'), (2, 'finished')]
         ))
-
-    def is_accessible(self):
-        return current_user.has_role('admin')
-
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('auth.login', next=request.url))
 
 
 class TicketAdminView(sqla.ModelView):
+
+    @expose('/')
+    @admin_required
+    def index_view(self):
+        return super(sqla.ModelView, self).index_view()
+
     page_size = 50
     form_overrides = dict(status=SelectField)
     form_args = dict(
@@ -126,71 +124,65 @@ class TicketAdminView(sqla.ModelView):
             choices=[(0, 'waiting'), (1, 'in_progress'), (2, 'finished')]
         ))
 
-    def is_accessible(self):
-        return current_user.has_role('admin')
-
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('auth.login', next=request.url))
-
 
 class NoteAdminView(sqla.ModelView):
+
+    @expose('/')
+    @admin_required
+    def index_view(self):
+        return super(sqla.ModelView, self).index_view()
+
     page_size = 50
-
-    def is_accessible(self):
-        return current_user.has_role('admin')
-
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('auth.login', next=request.url))
 
 
 class CustomerAdminView(sqla.ModelView):
+
+    @expose('/')
+    @admin_required
+    def index_view(self):
+        return super(sqla.ModelView, self).index_view()
+
     page_size = 50
-
-    def is_accessible(self):
-        return current_user.has_role('admin')
-
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('auth.login', next=request.url))
 
 
 class PartDetailsAdminView(sqla.ModelView):
+
+    @expose('/')
+    @admin_required
+    def index_view(self):
+        return super(sqla.ModelView, self).index_view()
+
     page_size = 50
-
-    def is_accessible(self):
-        return current_user.has_role('admin')
-
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('auth.login', next=request.url))
 
 
 class PartNoAdminView(sqla.ModelView):
+
+    @expose('/')
+    @admin_required
+    def index_view(self):
+        return super(sqla.ModelView, self).index_view()
+
     page_size = 50
-
-    def is_accessible(self):
-        return current_user.has_role('admin')
-
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('auth.login', next=request.url))
 
 
 class TeamAdminView(sqla.ModelView):
+
+    @expose('/')
+    @admin_required
+    def index_view(self):
+        return super(sqla.ModelView, self).index_view()
+
     page_size = 50
-
-    def is_accessible(self):
-        return current_user.has_role('admin')
-
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('auth.login', next=request.url))
 
 
 class MessageAdminView(sqla.ModelView):
+
+    @expose('/')
+    @admin_required
+    def index_view(self):
+        return super(sqla.ModelView, self).index_view()
+
     page_size = 50
-
-    def is_accessible(self):
-        return current_user.has_role('admin')
-
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('auth.login', next=request.url))
 
 
 class LoginMenuLink(MenuLink):

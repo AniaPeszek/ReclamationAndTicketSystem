@@ -5,8 +5,6 @@ from datetime import datetime, timedelta
 import jwt
 from time import time
 from flask_login import UserMixin
-from flask_security import RoleMixin, SQLAlchemyUserDatastore, current_user
-
 
 
 @login.user_loader
@@ -23,12 +21,6 @@ received_messages_table = db.Table('received_messages_table',
                                    db.Column('received_msg_id', db.Integer, db.ForeignKey('user.id')),
                                    db.Column('receivers_id', db.Integer, db.ForeignKey('message.id'))
                                    )
-
-roles_users = db.Table(
-    'roles_users',
-    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
-    db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
-)
 
 
 class User(UserMixin, db.Model):
@@ -50,11 +42,7 @@ class User(UserMixin, db.Model):
         backref=db.backref('subordinate', lazy='dynamic'),
         lazy='dynamic'
     )
-    roles = db.relationship(
-        'Role',
-        secondary=roles_users,
-        backref=db.backref('users', lazy='dynamic')
-    )
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
 
     team = db.relationship('Team', foreign_keys=team_id, backref='team_members')
     reclamation_req = db.relationship('Reclamation', backref='reclamation_requester', lazy='dynamic')
@@ -94,9 +82,20 @@ class User(UserMixin, db.Model):
         return User.query.get(id)
 
     def has_role(self, role):
-        if role in self.roles:
+        if role == self.role:
             return True
         return False
+
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+        if self.role is None:
+            self.role = Role.query.filter_by(default=True).first()
+
+    def can(self, perm):
+        return self.role is not None and self.role.has_permission(perm)
+
+    def is_administrator(self):
+        return self.can(Permission.ADMIN)
 
 
 class Reclamation(db.Model):
@@ -201,10 +200,18 @@ class Message(db.Model):
     sender = db.relationship('User', foreign_keys=sender_id, post_update=True)
 
 
-class Role(db.Model, RoleMixin):
+class Role(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
+    default = db.Column(db.Boolean, default=False, index=True)
+    permissions = db.Column(db.Integer)
+    users = db.relationship('User', backref='role', lazy='dynamic')
+
+    def __init__(self, **kwargs):
+        super(Role, self).__init__(**kwargs)
+        if self.permissions is None:
+            self.permissions = 0
 
     # __str__ is required by Flask-Admin, so we can have human-readable values for the Role when editing a User.
     def __str__(self):
@@ -214,7 +221,43 @@ class Role(db.Model, RoleMixin):
     def __hash__(self):
         return hash(self.name)
 
+    def add_permission(self, perm):
+        if not self.has_permission(perm):
+            self.permissions += perm
 
-user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+    def remote_permission(self, perm):
+        if self.has_permission(perm):
+            self.permissions -= perm
+
+    def reset_permissions(self):
+        self.permissions = 0
+
+    def has_permission(self, perm):
+        return self.permissions & perm == perm
+
+    # method to update roles or create role if doesn't exist
+    @staticmethod
+    def insert_roles():
+        roles = {
+            'user': [Permission.READ, Permission.EDIT],
+            'super_user': [Permission.READ, Permission.EDIT, Permission.MODERATE],
+            'admin': [Permission.READ, Permission.EDIT, Permission.MODERATE, Permission.ADMIN]
+        }
+        default_role = 'user'
+        for r in roles:
+            role = Role.query.filter_by(name=r).first()
+            if role is None:
+                role = Role(name=r)
+            role.reset_permissions()
+            for perm in roles[r]:
+                role.add_permission(perm)
+            role.default = (role.name == default_role)
+            db.session.add(role)
+        db.session.commit()
 
 
+class Permission:
+    READ = 1
+    EDIT = 2
+    MODERATE = 4
+    ADMIN = 16

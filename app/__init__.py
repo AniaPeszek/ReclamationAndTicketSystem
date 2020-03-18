@@ -4,7 +4,6 @@ from flask_migrate import Migrate
 from flask_babelex import Babel
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
-from flask_security import Security
 from flask_admin import Admin
 from flask_login import LoginManager
 
@@ -18,14 +17,10 @@ bootstrap = Bootstrap()
 babel = Babel()
 mail = Mail()
 login = LoginManager()
-# from app.admin.routes import MyAdminIndexView
-# admin = Admin(name='ERP - Admin', template_mode='bootstrap3', index_view=MyAdminIndexView())
-# admin = Admin(name='ERP - Admin', template_mode='bootstrap3')
-security = Security()
-
-from app.models import user_datastore
+login.login_view = 'auth.login'
 
 from app.admin.routes import init_admin, MyAdminIndexView
+
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -36,16 +31,17 @@ def create_app(config_class=Config):
     babel.init_app(app)
     mail.init_app(app)
     login.init_app(app)
-    # admin.init_app(app)
-    security.init_app(app, user_datastore)
 
     f_admin = Admin(app, name='ERP - Admin', index_view=MyAdminIndexView(), template_mode='bootstrap3')
+
+    from app.errors import bp as errors_bp
+    app.register_blueprint(errors_bp)
 
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
 
     from app.auth import bp as auth_bp
-    app.register_blueprint(auth_bp)
+    app.register_blueprint(auth_bp, url_prefix='/auth')
 
     init_admin(f_admin)
     from app.admin import bp as admin_bp

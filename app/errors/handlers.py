@@ -12,3 +12,9 @@ def not_found_error(error):
 def internal_error(error):
     # db.session.rollback()
     return render_template("errors/500.html")
+
+
+@bp.app_errorhandler(403)
+def forbidden_error(error):
+    return render_template('errors/403.html'), 403
+#można się zastanowic czy ze względów bezpieczeństwa nie zwracać tu 404, żeby uzytkownicy nie wiedzieli że jest taka strona
