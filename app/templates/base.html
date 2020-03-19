@@ -28,7 +28,7 @@
                             <span id="message_count" class="badge badge-primary"
                                   style="visibility: {% if new_messages %}visible
                                                      {% else %}hidden {% endif %};">
-                                {{ new_messages }}
+                                {{ new_messages }} new
                             </span>
                         </a>
                     </li>
@@ -57,12 +57,33 @@
         {% block app_content %} {% endblock %}
     </div>
 {% endblock %}
+
+
 {% block scripts %}
     {{ super() }}
+    {{ moment.include_moment() }}
+    {{ moment.lang(g.locale) }}
     <script>
         function set_message_count(n) {
             $('#message_count').text(n);
             $('#message_count').css('visibility', n ? 'visible' : 'hidden');
         }
+
+        {% if current_user.is_authenticated %}
+        $(function() {
+            var since = 0;
+            setInterval(function() {
+                $.ajax('{{ url_for('users.notifications') }}?since=' + since).done(
+                    function(notifications) {
+                        for (var i = 0; i < notifications.length; i++) {
+                            if (notifications[i].name == 'unread_message_count')
+                                set_message_count(notifications[i].data);
+                            since = notifications[i].timestamp;
+                        }
+                    }
+                );
+            }, 10000);
+        });
+        {% endif %}
     </script>
 {% endblock %}

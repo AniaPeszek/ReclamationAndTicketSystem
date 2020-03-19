@@ -1,15 +1,13 @@
-<table>
-    <tr valign="top">
-        <td>{{ msg.author.username }}</td>
-        <td>
-            {% set user_link %}
-{#            <a href="{{ url_for('users.user', username=post.author.username) }}">#}
-{#                {{ post.author.username }} </a>#}
-                <a href="#"></a>
-            {% endset %}
-            {{ _('From %(username)s:',
-                    username=user_link) }}
-            <br> {{ msg.content }}
-        </td>
-    </tr>
+<table class="table table-bordered">
+        <tr class="table-primary">
+            <td class="info">
+            {{ _('From  %(username)s, sent: %(when)s:', username=msg.author.username,
+                        when=moment(msg.timestamp).format("LLL") )}}
+            </td>
+        </tr>
+        <tr>
+            <td>
+              {{ msg.content }}
+            </td>
+        </tr>
 </table>

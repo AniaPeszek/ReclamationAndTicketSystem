@@ -1,2 +1,21 @@
 {% extends 'base.html' %}
 
+{% block app_content %}
+<div class="row">
+  <div class="col-md-4">
+      <h2>{{ _('Latest tickets') }}</h2>
+  </div>
+
+  <div class="col-md-4">
+      <h2>{{ _('Latest reclamations') }}</h2>
+  </div>
+
+  <div class="col-md-4">
+          <h2>{{ _('Latest messages') }}</h2>
+    {% for msg in messages %}
+        {% include '_msg.html' %}
+    {% endfor %}
+
+  </div>
+</div>
+{% endblock %}

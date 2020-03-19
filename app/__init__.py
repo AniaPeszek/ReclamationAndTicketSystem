@@ -6,6 +6,7 @@ from flask_bootstrap import Bootstrap
 from flask_mail import Mail
 from flask_admin import Admin
 from flask_login import LoginManager
+from flask_moment import Moment
 
 from config import Config
 from logging.handlers import SMTPHandler
@@ -18,6 +19,7 @@ babel = Babel()
 mail = Mail()
 login = LoginManager()
 login.login_view = 'auth.login'
+moment = Moment()
 
 from app.admin.routes import init_admin, MyAdminIndexView
 
@@ -31,6 +33,7 @@ def create_app(config_class=Config):
     babel.init_app(app)
     mail.init_app(app)
     login.init_app(app)
+    moment.init_app(app)
 
     f_admin = Admin(app, name='ERP - Admin', index_view=MyAdminIndexView(), template_mode='bootstrap3')
 
@@ -49,6 +52,9 @@ def create_app(config_class=Config):
 
     from app.users import bp as users_bp
     app.register_blueprint(users_bp, url_prefix='/users')
+
+    from app.reclamation import bp as reclamation_bp
+    app.register_blueprint(reclamation_bp)
 
     if not app.debug and not app.testing:
         if app.config['MAIL_SERVER']:

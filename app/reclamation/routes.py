@@ -8,8 +8,8 @@ from app.reclamation import bp
 from app.reclamation.forms import ReclamationForm
 
 
-@login_required
 @bp.route('/reclamation', methods=['GET', 'POST'])
+@login_required
 def new_reclamation():
     form = ReclamationForm()
 
@@ -27,7 +27,7 @@ def new_reclamation():
                                       reclamation_customer=form.customer.data,
                                       informed_date=form.informed_date.data,
                                       due_date=form.due_date.data,
-                                      finished_date=form.finished_date.data,
+                                      # finished_date=form.finished_date.data,
                                       reclamation_part_sn=partDetails_in_database if partDetails_in_database else newPartDetails,
                                       description_reclamation=form.description.data,
                                       status='1')
@@ -38,15 +38,17 @@ def new_reclamation():
 
         reclamation = Reclamation.query.filter_by(id=new_reclamation.id).first_or_404()
 
+
+        #a może lepiej przekierowanie na stronę dodanej reclamacji?
+        return redirect(url_for('reclamation_bp.reclamation', reclamation_number=str(reclamation.id)))
         #Do poprawy odniesienie
         # return redirect(url_for('reclamation_bp.reclamation', reclamation=reclamation))
-        return render_template('reclamation/new_reclamation.html', form=form)
-
+        # return render_template('reclamation/new_reclamation.html', form=form)
     return render_template('reclamation/new_reclamation.html', form=form)
 
 
-@login_required
 @bp.route('/reclamation/<reclamation_number>')
+@login_required
 def reclamation(reclamation_number):
     reclamation = Reclamation.query.filter_by(id=reclamation_number).first_or_404()
 

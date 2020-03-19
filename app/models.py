@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import jwt
 from time import time
 from flask_login import UserMixin
+import json
 
 
 @login.user_loader
@@ -16,12 +17,6 @@ supervisor_table = db.Table('supervisor_table',
                             db.Column('employee_id', db.Integer, db.ForeignKey('user.id')),
                             db.Column('supervisor_id', db.Integer, db.ForeignKey('user.id'))
                             )
-
-
-# received_messages_table = db.Table('received_messages_table',
-#                                    db.Column('received_msg_id', db.Integer, db.ForeignKey('user.id')),
-#                                    db.Column('receivers_id', db.Integer, db.ForeignKey('message.id'))
-#                                    )
 
 
 class User(UserMixin, db.Model):
@@ -53,7 +48,6 @@ class User(UserMixin, db.Model):
                                  foreign_keys='[Ticket.assigned_employee]')
     note_draf = db.relationship('Note', backref='note_drafter', lazy='dynamic')
     part_no_person = db.relationship('PartNo', backref='part_no_person_in_charge', lazy='dynamic')
-    # received_messages = db.relationship('Message', secondary=received_messages_table, backref='receivers')
 
     messages_sent = db.relationship('Message',
                                     foreign_keys='Message.sender_id',
@@ -63,6 +57,15 @@ class User(UserMixin, db.Model):
                                         backref='recipient', lazy='dynamic')
     last_message_read_time = db.Column(db.DateTime)
 
+    notifications = db.relationship('Notification', backref='user',
+                                    lazy='dynamic')
+
+    def add_notification(self, name, data):
+        self.notifications.filter_by(name=name).delete()
+        n = Notification(name=name, payload_json=json.dumps(data), user=self)
+        db.session.add(n)
+        return n
+
     def new_messages(self):
         last_read_time = self.last_message_read_time or datetime(1900, 1, 1)
         return Message.query.filter_by(recipient=self).filter(
@@ -70,6 +73,9 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f'<User {self.username}>'
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -139,16 +145,19 @@ class Reclamation(db.Model):
 
     tickets = db.relationship('Ticket', backref='reclamation', lazy='dynamic')
 
-    def __init__(self, requester, customer_id, informed_date, part_sn,
+    def __init__(self, reclamation_requester, reclamation_customer, informed_date, reclamation_part_sn,
                  description_reclamation, status, due_date=None, finished_date=None):
-        self.requester = requester
-        self.customer_id = customer_id
+        # self.requester = requester
+        # self.customer_id = customer_id
         self.informed_date = informed_date
         self.due_date = due_date if due_date else informed_date + timedelta(days=30)
         self.finished_date = finished_date
-        self.part_sn = part_sn
+        # self.part_sn = part_sn
         self.description_reclamation = description_reclamation
         self.status = status
+        self.reclamation_requester = reclamation_requester
+        self.reclamation_customer = reclamation_customer
+        self.reclamation_part_sn = reclamation_part_sn
 
 
 class Ticket(db.Model):
@@ -292,3 +301,14 @@ class Permission:
     EDIT = 2
     MODERATE = 4
     ADMIN = 16
+
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    timestamp = db.Column(db.Float, index=True, default=time)
+    payload_json = db.Column(db.Text)
+
+    def get_data(self):
+        return json.loads(str(self.payload_json))
