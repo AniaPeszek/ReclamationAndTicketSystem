@@ -24,6 +24,7 @@
                     <li><a href="{{ url_for('main.index') }}">{{ _('My tasks') }}</a></li>
                     <li><a href="{{ url_for('users.send_message') }}">{{ _('Send message') }}</a></li>
                     <li><a href="{{ url_for('users.messages') }}">{{ _('Messages') }}
+                    <li><a href="{{ url_for('reclamation_bp.new_reclamation') }}">{{ _('Create reclamation') }}
                             {% set new_messages = current_user.new_messages() %}
                             <span id="message_count" class="badge badge-primary"
                                   style="visibility: {% if new_messages %}visible

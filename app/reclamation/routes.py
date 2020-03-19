@@ -1,11 +1,11 @@
-from flask import render_template, flash, redirect, url_for
+from flask import render_template, flash, redirect, url_for, request
 
 from flask_login import current_user, login_required
 
 from app import db
-from app.models import PartDetails, Reclamation
+from app.models import PartDetails, Reclamation, Customer
 from app.reclamation import bp
-from app.reclamation.forms import ReclamationForm
+from app.reclamation.forms import ReclamationForm, EditReclamationForm
 
 
 @bp.route('/reclamation', methods=['GET', 'POST'])
@@ -27,7 +27,6 @@ def new_reclamation():
                                       reclamation_customer=form.customer.data,
                                       informed_date=form.informed_date.data,
                                       due_date=form.due_date.data,
-                                      # finished_date=form.finished_date.data,
                                       reclamation_part_sn=partDetails_in_database if partDetails_in_database else newPartDetails,
                                       description_reclamation=form.description.data,
                                       status='1')
@@ -38,18 +37,23 @@ def new_reclamation():
 
         reclamation = Reclamation.query.filter_by(id=new_reclamation.id).first_or_404()
 
-
-        #a może lepiej przekierowanie na stronę dodanej reclamacji?
         return redirect(url_for('reclamation_bp.reclamation', reclamation_number=str(reclamation.id)))
-        #Do poprawy odniesienie
-        # return redirect(url_for('reclamation_bp.reclamation', reclamation=reclamation))
-        # return render_template('reclamation/new_reclamation.html', form=form)
+
     return render_template('reclamation/new_reclamation.html', form=form)
 
 
-@bp.route('/reclamation/<reclamation_number>')
+@bp.route('/reclamation/<reclamation_number>', methods=['GET', 'POST'])
 @login_required
 def reclamation(reclamation_number):
-    reclamation = Reclamation.query.filter_by(id=reclamation_number).first_or_404()
+    rec = Reclamation.query.get(reclamation_number)
+    requester = rec.reclamation_requester.username
+    form = EditReclamationForm(formdata=request.form,
+                               obj=rec,
+                               customer=rec.reclamation_customer,
+                               informed_date=rec.informed_date,
+                               due_date=rec.due_date,
+                               part_model=rec.reclamation_part_sn.part_no,
+                               part_prod_date=rec.reclamation_part_sn.production_date,
+                               description=rec.description_reclamation)
 
-    return render_template('reclamation/reclamation.html', reclamation=reclamation)
+    return render_template('reclamation/reclamation.html', form=form, requester=requester)

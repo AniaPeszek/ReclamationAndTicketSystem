@@ -10,9 +10,11 @@ Flask-Admin==1.5.5
 Flask-Babel==1.0.0
 Flask-BabelEx==0.9.4
 Flask-Bootstrap==3.3.7.1
+Flask-Datepicker==0.12
 Flask-Login==0.5.0
 Flask-Mail==0.9.1
 Flask-Migrate==2.5.2
+Flask-Moment==0.9.0
 Flask-Principal==0.4.0
 Flask-Security==3.0.0
 Flask-SQLAlchemy==2.4.1
@@ -31,6 +33,8 @@ pytz==2019.3
 six==1.14.0
 speaklater==1.3
 SQLAlchemy==1.3.13
+static-parameters==0.4
 visitor==0.1.3
 Werkzeug==1.0.0
 WTForms==2.2.1
+WTForms-SQLAlchemy==0.1

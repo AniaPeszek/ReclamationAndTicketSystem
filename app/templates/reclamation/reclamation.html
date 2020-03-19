@@ -1,16 +1,16 @@
 {% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
 
 {% block app_content %}
     <h1>{{ _('Reclamation') }}</h1>
 
-    <p>Reclamation ID: {{ reclamation.id }}</p>
-    <p>Requester: {{ reclamation.reclamation_requester.username }}</p>
-    <p>Customer name: {{ reclamation.reclamation_customer.name }}</p>
-    <p>Informed date: {{ reclamation.informed_date }}</p>
-    <p>Due date: {{ reclamation.due_date }}</p>
-    <p>Finished date: {{ reclamation.finished_date }}</p>
-    <p>Part Serial Number: {{ reclamation.reclamation_part_sn.part_sn }}</p>
-    <p>Description of the issue: {{ reclamation.description_reclamation }}</p>
-    <p>Status: {{ reclamation.status }}</p>
+    <div class="row">
+        <div class="col-md-4">
+            <h3>Requester: {{ requester }}</h3>
+
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
 
 {% endblock %}

@@ -147,12 +147,10 @@ class Reclamation(db.Model):
 
     def __init__(self, reclamation_requester, reclamation_customer, informed_date, reclamation_part_sn,
                  description_reclamation, status, due_date=None, finished_date=None):
-        # self.requester = requester
-        # self.customer_id = customer_id
+
         self.informed_date = informed_date
         self.due_date = due_date if due_date else informed_date + timedelta(days=30)
         self.finished_date = finished_date
-        # self.part_sn = part_sn
         self.description_reclamation = description_reclamation
         self.status = status
         self.reclamation_requester = reclamation_requester
