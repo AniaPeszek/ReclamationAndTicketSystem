@@ -1,15 +1,14 @@
 {% extends "base.html" %}
-{% import 'bootstrap/wtf.html' as wtf %}
+{% from 'bootstrap/form.html' import render_form %}
 
 
 {% block app_content %}
     <h1>{{ _('Reclamation') }}</h1>
 
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-9">
             <h3>Requester: {{ requester }}</h3>
-
-            {{ wtf.quick_form(form) }}
+            {{ render_form(form, form_type='horizontal', horizontal_columns=('lg', 3, 9)) }}
         </div>
     </div>
 

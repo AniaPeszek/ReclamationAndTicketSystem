@@ -1,53 +1,88 @@
-{% extends 'bootstrap/base.html' %}
+{% from 'bootstrap/nav.html' import render_nav_item %}
+<!doctype html>
+<html lang="en">
+<head>
+    {% block head %}
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-{% block title %}
-    {% if title %}
-        {{ title }} - ERP
-    {% else %}
-        ERP System
-    {% endif %}
-{% endblock %}
+        {% block styles %}
+            <!-- Bootstrap CSS -->
+            {{ bootstrap.load_css() }}
+            <style type="text/css">
+                body {
+                    background: #f5f5f0 !important;
+                }
+            </style>
+        {% endblock %}
 
+        <title>
+            {% if title %}
+                {{ title }} - ERP
+            {% else %}
+                ERP System
+            {% endif %}
+        </title>
+
+    {% endblock %}
+</head>
+
+<body>
 {% block navbar %}
-    <nav class="navbar navbar-default">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-                        data-target="#bs-example-navbar-collapse-1" aria-expanded="false"><span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="{{ url_for('main.index') }}">ERP</a></div>
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav">
-                    <li><a href="{{ url_for('main.index') }}">{{ _('Homepage') }}</a></li>
-                {% if not current_user.is_anonymous %}
-                    <li><a href="{{ url_for('main.index') }}">{{ _('My tasks') }}</a></li>
-                    <li><a href="{{ url_for('users.send_message') }}">{{ _('Send message') }}</a></li>
-                    <li><a href="{{ url_for('users.messages') }}">{{ _('Messages') }}
-                    <li><a href="{{ url_for('reclamation_bp.new_reclamation') }}">{{ _('Create reclamation') }}
-                            {% set new_messages = current_user.new_messages() %}
-                            <span id="message_count" class="badge badge-primary"
-                                  style="visibility: {% if new_messages %}visible
-                                                     {% else %}hidden {% endif %};">
-                                {{ new_messages }} new
-                            </span>
-                        </a>
+            <a class="navbar-brand mb-0 h1" href="{{ url_for('main.index') }}">ERP</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}">{{ _('Homepage') }}<span class="sr-only">(current)</span></a>
                     </li>
-                {% endif %}
+                    {% if not current_user.is_anonymous %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main.index') }}">{{ _('My tasks') }}</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               href="{{ url_for('reclamation_bp.new_reclamation') }}">{{ _('Create reclamation') }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('users.send_message') }}">{{ _('Send message') }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('users.messages') }}">{{ _('Messages') }}
+                                {% set new_messages = current_user.new_messages() %}
+                                <span id="message_count" class="badge badge-primary"
+                                      style="visibility: {% if new_messages %}visible
+                                      {% else %}hidden {% endif %};">
+                                        {{ new_messages }} new
+                                    </span></a>
+                        </li>
+                    {% endif %}
                 </ul>
-                <ul class="nav navbar-nav navbar-right">
+                <ul class="navbar-nav ml-auto">
                     {% if current_user.is_anonymous %}
-                        <li><a href="{{ url_for('auth.login') }}">{{ _('Login') }}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">{{ _('Login') }}</a>
+                        </li>
                     {% else %}
-                        <li><a href="{{ url_for('auth.logout') }}">{{ _('Logout') }}</a></li>
+                        <li class="nav-item"><a class="nav-link"
+                                                href="{{ url_for('auth.logout') }}">{{ _('Logout') }}</a></li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
 {% endblock %}
+
+<!-- Your page content -->
 {% block content %}
-    <div class="container">
+    <div class="container" style="margin-top: 10px;">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
@@ -59,9 +94,10 @@
     </div>
 {% endblock %}
 
-
 {% block scripts %}
-    {{ super() }}
+    <!-- Optional JavaScript -->
+    {{ bootstrap.load_js() }}
+
     {{ moment.include_moment() }}
     {{ moment.lang(g.locale) }}
     <script>
@@ -71,20 +107,29 @@
         }
 
         {% if current_user.is_authenticated %}
-        $(function() {
-            var since = 0;
-            setInterval(function() {
-                $.ajax('{{ url_for('users.notifications') }}?since=' + since).done(
-                    function(notifications) {
-                        for (var i = 0; i < notifications.length; i++) {
-                            if (notifications[i].name == 'unread_message_count')
-                                set_message_count(notifications[i].data);
-                            since = notifications[i].timestamp;
+            $(function () {
+                var since = 0;
+                setInterval(function () {
+                    $.ajax('{{ url_for('users.notifications') }}?since=' + since).done(
+                        function (notifications) {
+                            for (var i = 0; i < notifications.length; i++) {
+                                if (notifications[i].name == 'unread_message_count')
+                                    set_message_count(notifications[i].data);
+                                since = notifications[i].timestamp;
+                            }
                         }
-                    }
-                );
-            }, 10000);
-        });
+                    );
+                }, 10000);
+            });
         {% endif %}
     </script>
 {% endblock %}
+</body>
+</html>
+
+
+
+
+
+
+

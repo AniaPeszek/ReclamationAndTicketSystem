@@ -1,13 +1,15 @@
 <table class="table table-bordered">
-        <tr class="table-primary">
-            <td class="info">
-            {{ _('From  %(username)s, sent: %(when)s:', username=msg.author.username,
-                        when=moment(msg.timestamp).format("LLL") )}}
-            </td>
-        </tr>
-        <tr>
-            <td>
-              {{ msg.content }}
-            </td>
-        </tr>
+    <thead class="thead-dark">
+    <tr>
+        <th scope="col">
+            {{ _('From  %(username)s, sent: %(when)s', username=msg.author.username,
+                        when=moment(msg.timestamp).format("LLL") ) }}
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td scope="row">{{ msg.content }}</td>
+    </tr>
+    </tbody>
 </table>
