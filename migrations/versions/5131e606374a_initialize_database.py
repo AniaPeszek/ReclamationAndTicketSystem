@@ -1,8 +1,8 @@
-"""db with messages
+"""Initialize database
 
-Revision ID: 6a19c247460c
+Revision ID: 5131e606374a
 Revises: 
-Create Date: 2020-03-18 11:39:27.072207
+Create Date: 2020-03-23 09:55:13.687364
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '6a19c247460c'
+revision = '5131e606374a'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -76,6 +76,17 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_message_timestamp'), 'message', ['timestamp'], unique=False)
+    op.create_table('notification',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=128), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.Column('timestamp', sa.Float(), nullable=True),
+    sa.Column('payload_json', sa.Text(), nullable=True),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_notification_name'), 'notification', ['name'], unique=False)
+    op.create_index(op.f('ix_notification_timestamp'), 'notification', ['timestamp'], unique=False)
     op.create_table('part_no',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('model', sa.String(length=120), nullable=True),
@@ -111,7 +122,7 @@ def upgrade():
     sa.Column('finished_date', sa.DateTime(), nullable=True),
     sa.Column('part_sn', sa.Integer(), nullable=False),
     sa.Column('description_reclamation', sa.String(length=512), nullable=False),
-    sa.Column('status', sa.Integer(), nullable=False),
+    sa.Column('status', sa.String(), nullable=False),
     sa.ForeignKeyConstraint(['customer_id'], ['customer.id'], ),
     sa.ForeignKeyConstraint(['part_sn'], ['part_details.part_sn'], ),
     sa.ForeignKeyConstraint(['requester'], ['user.id'], ),
@@ -168,6 +179,9 @@ def downgrade():
     op.drop_table('part_details')
     op.drop_table('supervisor_table')
     op.drop_table('part_no')
+    op.drop_index(op.f('ix_notification_timestamp'), table_name='notification')
+    op.drop_index(op.f('ix_notification_name'), table_name='notification')
+    op.drop_table('notification')
     op.drop_index(op.f('ix_message_timestamp'), table_name='message')
     op.drop_table('message')
     op.drop_index(op.f('ix_user_username'), table_name='user')

@@ -141,18 +141,18 @@ class Reclamation(db.Model):
     finished_date = db.Column(db.DateTime, index=True)
     part_sn = db.Column(db.Integer, db.ForeignKey('part_details.part_sn'), nullable=False)
     description_reclamation = db.Column(db.String(512), nullable=False)
-    status = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String, nullable=False)
 
     tickets = db.relationship('Ticket', backref='reclamation', lazy='dynamic')
 
     def __init__(self, reclamation_requester, reclamation_customer, informed_date, reclamation_part_sn,
-                 description_reclamation, status, due_date=None, finished_date=None):
+                 description_reclamation, due_date=None, finished_date=None):
 
         self.informed_date = informed_date
         self.due_date = due_date if due_date else informed_date + timedelta(days=30)
         self.finished_date = finished_date
         self.description_reclamation = description_reclamation
-        self.status = status
+        self.status = 'Closed' if finished_date else 'Open'
         self.reclamation_requester = reclamation_requester
         self.reclamation_customer = reclamation_customer
         self.reclamation_part_sn = reclamation_part_sn

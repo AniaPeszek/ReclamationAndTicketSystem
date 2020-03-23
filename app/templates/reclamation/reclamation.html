@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from 'bootstrap/form.html' import render_form %}
+{% from 'bootstrap/form.html' import render_field %}
 
 
 {% block app_content %}
@@ -8,7 +9,24 @@
     <div class="row">
         <div class="col-md-9">
             <h3>Requester: {{ requester }}</h3>
-            {{ render_form(form, form_type='horizontal', horizontal_columns=('lg', 3, 9)) }}
+            <h3>Status: {{ status }}</h3>
+            <form method="POST">
+                {{ render_field(form.customer) }}
+                {{ render_field(form.informed_date) }}
+                {{ render_field(form.due_date) }}
+                {{ render_field(form.part_model) }}
+                {{ render_field(form.part_sn) }}
+                {{ render_field(form.part_prod_date) }}
+                {{ render_field(form.description) }}
+                {{ render_field(form.finished_date) }}
+                {% if current_user.id == rec.reclamation_requester.id %}
+                    {{ render_field(form.submit) }}
+                {% endif %}
+
+
+
+            </form>
+{#            {{ render_form(form, form_type='horizontal', horizontal_columns=('lg', 3, 9)) }}#}
         </div>
     </div>
 
