@@ -7,6 +7,7 @@ from flask_mail import Mail
 from flask_admin import Admin
 from flask_login import LoginManager
 from flask_moment import Moment
+from flask_marshmallow import Marshmallow
 
 from config import Config
 from logging.handlers import SMTPHandler
@@ -20,6 +21,7 @@ mail = Mail()
 login = LoginManager()
 login.login_view = 'auth.login'
 moment = Moment()
+ma = Marshmallow()
 
 from app.admin.routes import init_admin, MyAdminIndexView
 
@@ -34,6 +36,7 @@ def create_app(config_class=Config):
     mail.init_app(app)
     login.init_app(app)
     moment.init_app(app)
+    ma.init_app(app)
 
     f_admin = Admin(app, name='ERP - Admin', index_view=MyAdminIndexView(), template_mode='bootstrap3')
 

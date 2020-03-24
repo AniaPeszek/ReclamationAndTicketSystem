@@ -1,0 +1,14 @@
+<tr class='clickable-row' data-href={{ url_for('reclamation_bp.reclamation', reclamation_number=recl.id) }}>
+    <th scope="row">{{ recl.id }}</th>
+    <td>{{ recl.reclamation_customer.name }}</td>
+    <td>{{ moment(recl.informed_date).format('L') }}</td>
+    <td>{{ moment(recl.due_date).format('L') }}</td>
+    {% if recl.finished_date is none %}
+    <td>{{ _('-') }}</td>
+    {% else %}
+    <td>{{ moment(recl.finished_date).format('L') }}</td>
+    {% endif %}
+    <td>{{ recl.reclamation_part_sn.part_no.model }}</td>
+    <td>{{ recl.part_sn }}</td>
+    <td>{{ recl.reclamation_part_sn.production_date }}</td>
+</tr>

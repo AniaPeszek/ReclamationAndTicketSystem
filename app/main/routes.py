@@ -24,12 +24,3 @@ def index():
 
         return render_template('main/index.html', title=_('Homepage'), messages=messages)
     return render_template('main/index.html', title=_('Homepage'))
-
-
-@bp.route('/test', methods=['GET', 'POST'])
-@login_required
-def test():
-    return '<h1>This is test</h1>'
-
-
-

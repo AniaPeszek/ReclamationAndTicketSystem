@@ -54,10 +54,13 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('users.send_message') }}">{{ _('Send message') }}</a>
+                            <a class="nav-link" href="{{ url_for('reclamation_bp.reclamations_all') }}">{{ _('Reclamations') }}</a>
                         </li>
+{#                        <li class="nav-item">#}
+{#                            <a class="nav-link" href="{{ url_for('users.send_message') }}">{{ _('Send message') }}</a>#}
+{#                        </li>#}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('users.messages') }}">{{ _('Messages') }}
+                            <a class="nav-link" href="{{ url_for('users.messages') }}">{{ _('Notifications') }}
                                 {% set new_messages = current_user.new_messages() %}
                                 <span id="message_count" class="badge badge-primary"
                                       style="visibility: {% if new_messages %}visible
@@ -120,7 +123,7 @@
                             }
                         }
                     );
-                }, 10000);
+                }, 100000);
             });
         {% endif %}
     </script>

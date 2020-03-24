@@ -1,11 +1,14 @@
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, jsonify, current_app
 
 from flask_login import current_user, login_required
 
-from app import db
-from app.models import PartDetails, Reclamation, Customer
+from app import db, ma
+from app.models import PartDetails, Reclamation, Customer, PartNo, User
 from app.reclamation import bp
 from app.reclamation.forms import ReclamationForm, EditReclamationForm, ReadOnlyReclamationForm
+
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
+from flask_marshmallow.fields import Hyperlinks, URLFor
 
 
 @bp.route('/reclamation', methods=['GET', 'POST'])
@@ -100,3 +103,56 @@ def reclamation(reclamation_number):
             return redirect(url_for('reclamation_bp.reclamation', reclamation_number=str(rec.id)))
 
     return render_template('reclamation/reclamation.html', form=form, requester=requester, status=status, rec=rec)
+
+
+@bp.route('/all')
+@bp.route('/all/<int:page_num>')
+@login_required
+def all_reclamations(page_num=1):
+    reclamations = Reclamation.query.order_by(Reclamation.finished_date). \
+        paginate(page=page_num, per_page=current_app.config['ELEMENTS_PER_PAGE'], error_out=False)
+    return render_template('reclamation/all.html', reclamations=reclamations)
+
+# jak już będzie działać ok, to przenieść do app.models
+class PartDetailsSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = PartDetails
+        # include_fk = True
+
+
+class PartNoSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = PartNo
+
+
+class UserSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = User
+
+
+class ReclamationSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Reclamation
+        # include_fk = True
+
+    _links = Hyperlinks({'self': URLFor('reclamation_bp.reclamation', reclamation_number=str(id))})
+
+
+user_schema = UserSchema(many=True)
+part_no_schema = PartNoSchema(many=True)
+part_detail_schema = PartDetailsSchema(many=True)
+reclamation_schema = ReclamationSchema(many=True)
+
+
+@bp.route('/reclamation_get_data', methods=['GET', 'POST'])
+@login_required
+def reclamations_data():
+    reclamations = Reclamation.query.all()
+    output = reclamation_schema.dump(reclamations)
+    return jsonify({"reclamations": output})
+
+
+@bp.route('/reclamations/all', methods=['GET', 'POST'])
+@login_required
+def reclamations_all():
+    return render_template('reclamation/reclamations_all.html')
