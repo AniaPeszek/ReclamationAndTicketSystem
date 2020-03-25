@@ -1,8 +1,8 @@
 """Initialize database
 
-Revision ID: 5131e606374a
+Revision ID: 99b4a6ca9c37
 Revises: 
-Create Date: 2020-03-23 09:55:13.687364
+Create Date: 2020-03-25 11:52:46.366825
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '5131e606374a'
+revision = '99b4a6ca9c37'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -120,11 +120,11 @@ def upgrade():
     sa.Column('informed_date', sa.DateTime(), nullable=False),
     sa.Column('due_date', sa.DateTime(), nullable=True),
     sa.Column('finished_date', sa.DateTime(), nullable=True),
-    sa.Column('part_sn', sa.Integer(), nullable=False),
+    sa.Column('part_sn_id', sa.Integer(), nullable=False),
     sa.Column('description_reclamation', sa.String(length=512), nullable=False),
-    sa.Column('status', sa.String(), nullable=False),
+    sa.Column('status', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['customer_id'], ['customer.id'], ),
-    sa.ForeignKeyConstraint(['part_sn'], ['part_details.part_sn'], ),
+    sa.ForeignKeyConstraint(['part_sn_id'], ['part_details.id'], ),
     sa.ForeignKeyConstraint(['requester'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

@@ -1,5 +1,5 @@
 from flask import render_template, flash, redirect, url_for, request, jsonify, current_app
-
+from flask_babelex import _
 from flask_login import current_user, login_required
 
 from app import db, ma
@@ -30,7 +30,7 @@ def new_reclamation():
                                       reclamation_customer=form.customer.data,
                                       informed_date=form.informed_date.data,
                                       due_date=form.due_date.data,
-                                      reclamation_part_sn=partDetails_in_database if partDetails_in_database else newPartDetails,
+                                      reclamation_part_sn_id=partDetails_in_database if partDetails_in_database else newPartDetails,
                                       description_reclamation=form.description.data)
 
         db.session.add(new_reclamation)
@@ -49,15 +49,16 @@ def new_reclamation():
 def reclamation(reclamation_number):
     rec = Reclamation.query.get(reclamation_number)
     requester = rec.reclamation_requester.username
-    status = rec.status
+    status = _("Open") if rec.status == 0 else _("Closed")
     if current_user.id == rec.reclamation_requester.id:
         form = EditReclamationForm(formdata=request.form,
                                    obj=rec,
                                    customer=rec.reclamation_customer,
                                    informed_date=rec.informed_date,
                                    due_date=rec.due_date,
-                                   part_model=rec.reclamation_part_sn.part_no,
-                                   part_prod_date=rec.reclamation_part_sn.production_date,
+                                   part_model=rec.reclamation_part_sn_id.part_no,
+                                   part_sn=rec.reclamation_part_sn_id.part_sn,
+                                   part_prod_date=rec.reclamation_part_sn_id.production_date,
                                    description=rec.description_reclamation,
                                    finished_date=rec.finished_date, )
     else:
@@ -66,8 +67,9 @@ def reclamation(reclamation_number):
                                        customer=rec.reclamation_customer,
                                        informed_date=rec.informed_date,
                                        due_date=rec.due_date,
-                                       part_model=rec.reclamation_part_sn.part_no,
-                                       part_prod_date=rec.reclamation_part_sn.production_date,
+                                       part_model=rec.reclamation_part_sn_id.part_no,
+                                       part_sn=rec.reclamation_part_sn_id.part_sn,
+                                       part_prod_date=rec.reclamation_part_sn_id.production_date,
                                        description=rec.description_reclamation,
                                        finished_date=rec.finished_date, )
 
@@ -85,13 +87,13 @@ def reclamation(reclamation_number):
         rec.reclamation_customer = form.customer.data
         rec.informed_date = form.informed_date.data
         rec.due_date = form.due_date.data
-        rec.reclamation_part_sn = partDetails_in_database if partDetails_in_database else newPartDetails
+        rec.reclamation_part_sn_id = partDetails_in_database if partDetails_in_database else newPartDetails
         rec.description_reclamation = form.description.data
         rec.finished_date = form.finished_date.data
         if rec.finished_date is None:
-            rec.status = "Open"
+            rec.status = 0
         else:
-            rec.status = "Closed"
+            rec.status = 1
         try:
             if rec.finished_date < rec.informed_date:
                 flash('Finished date can not be earlier than Informed Date')
@@ -112,6 +114,7 @@ def all_reclamations(page_num=1):
     reclamations = Reclamation.query.order_by(Reclamation.finished_date). \
         paginate(page=page_num, per_page=current_app.config['ELEMENTS_PER_PAGE'], error_out=False)
     return render_template('reclamation/all.html', reclamations=reclamations)
+
 
 # jak już będzie działać ok, to przenieść do app.models
 class PartDetailsSchema(ma.SQLAlchemyAutoSchema):

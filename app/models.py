@@ -139,23 +139,23 @@ class Reclamation(db.Model):
     informed_date = db.Column(db.DateTime, index=True, nullable=False)
     due_date = db.Column(db.DateTime, index=True)
     finished_date = db.Column(db.DateTime, index=True)
-    part_sn = db.Column(db.Integer, db.ForeignKey('part_details.part_sn'), nullable=False)
+    part_sn_id = db.Column(db.Integer, db.ForeignKey('part_details.id'), nullable=False)
     description_reclamation = db.Column(db.String(512), nullable=False)
-    status = db.Column(db.String, nullable=False)
+    status = db.Column(db.Integer, nullable=False)
 
     tickets = db.relationship('Ticket', backref='reclamation', lazy='dynamic')
 
-    def __init__(self, reclamation_requester, reclamation_customer, informed_date, reclamation_part_sn,
+    def __init__(self, reclamation_requester, reclamation_customer, informed_date, reclamation_part_sn_id,
                  description_reclamation, due_date=None, finished_date=None):
 
         self.informed_date = informed_date
         self.due_date = due_date if due_date else informed_date + timedelta(days=30)
         self.finished_date = finished_date
         self.description_reclamation = description_reclamation
-        self.status = 'Closed' if finished_date else 'Open'
+        self.status = 1 if finished_date else 0
         self.reclamation_requester = reclamation_requester
         self.reclamation_customer = reclamation_customer
-        self.reclamation_part_sn = reclamation_part_sn
+        self.reclamation_part_sn_id = reclamation_part_sn_id
 
 
 class Ticket(db.Model):
@@ -206,7 +206,7 @@ class PartDetails(db.Model):
     production_date = db.Column(db.DateTime, index=True)
     part_sn = db.Column(db.String(120), unique=True)
 
-    reclamation_p_sn = db.relationship('Reclamation', backref='reclamation_part_sn', lazy='dynamic')
+    reclamation_p_sn = db.relationship('Reclamation', backref='reclamation_part_sn_id', lazy='dynamic')
 
 
 class PartNo(db.Model):

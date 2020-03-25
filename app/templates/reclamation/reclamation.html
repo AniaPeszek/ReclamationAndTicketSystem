@@ -11,6 +11,7 @@
             <h3>Requester: {{ requester }}</h3>
             <h3>Status: {{ status }}</h3>
             <form method="POST">
+                {{ form.csrf_token() }}
                 {{ render_field(form.customer) }}
                 {{ render_field(form.informed_date) }}
                 {{ render_field(form.due_date) }}
