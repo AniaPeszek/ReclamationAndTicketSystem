@@ -171,16 +171,16 @@ class Ticket(db.Model):
 
     note_tic = db.relationship('Note', backref='ticket', lazy='dynamic')
 
-    def __init__(self, requester, assigned_employee, description_ticket, status, reclamation_id,
+    def __init__(self, ticket_requester, ticket_assigned, description_ticket, reclamation,
                  due_date=None, finished_date=None):
-        self.requester = requester
-        self.assigned_employee = assigned_employee
+        self.ticket_requester = ticket_requester
+        self.ticket_assigned = ticket_assigned
         self.creation_date = datetime.utcnow()
         self.due_date = due_date if due_date else self.creation_date + timedelta(days=30)
         self.finished_date = finished_date
         self.description_ticket = description_ticket
-        self.status = status
-        self.reclamation_id = reclamation_id
+        self.status = 1 if finished_date else 0
+        self.reclamation = reclamation
 
 
 class Note(db.Model):

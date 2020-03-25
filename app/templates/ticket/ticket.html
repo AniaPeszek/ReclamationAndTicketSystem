@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from 'bootstrap/form.html' import render_form %}
+{% from 'bootstrap/form.html' import render_field %}
+
+
+{% block app_content %}
+    <h1>{{ _('Ticket') }}</h1>
+
+    <div class="row">
+        <div class="col-md-9">
+            <h3>Requester: {{ requester }}</h3>
+            <h3>Status: {{ status }}</h3>
+            <form method="POST">
+                {{ form.csrf_token() }}
+                {{ render_field(form.assigned_employee) }}
+                {{ render_field(form.reclamation_id) }}
+                {{ render_field(form.due_date) }}
+                {{ render_field(form.description_ticket) }}
+                {{ render_field(form.finished_date) }}
+                {% if current_user.id == ticket.ticket_requester.id  or current_user.id == rec.ticket_assigned.id %}
+                    {{ render_field(form.submit) }}
+                {% endif %}
+
+
+
+            </form>
+{#            {{ render_form(form, form_type='horizontal', horizontal_columns=('lg', 3, 9)) }}#}
+        </div>
+    </div>
+
+{% endblock %}
