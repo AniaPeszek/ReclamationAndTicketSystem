@@ -2,13 +2,11 @@ from flask import render_template, flash, redirect, url_for, request, jsonify, c
 from flask_babelex import _
 from flask_login import current_user, login_required
 
-from app import db, ma
-from app.models import PartDetails, Reclamation, Customer, PartNo, User
+from app import db
+from app.models import PartDetails, Reclamation
+from app.models_serialized import reclamation_schema
 from app.reclamation import bp
-from app.reclamation.forms import ReclamationForm, EditReclamationForm, ReadOnlyReclamationForm, Customer
-
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, field_for, auto_field
-from flask_marshmallow.fields import Hyperlinks, URLFor, fields
+from app.reclamation.forms import ReclamationForm, EditReclamationForm, ReadOnlyReclamationForm, CreateTickedForm
 
 
 @bp.route('/reclamation', methods=['GET', 'POST'])
@@ -73,6 +71,10 @@ def reclamation(reclamation_number):
                                        description=rec.description_reclamation,
                                        finished_date=rec.finished_date, )
 
+    form_create_ticket = CreateTickedForm()
+    if form_create_ticket.validate_on_submit():
+        return redirect(url_for('ticket_bp.new_ticket', rec_id=rec.id))
+
     if form.validate_on_submit():
 
         # checks if parts exists in database
@@ -104,7 +106,8 @@ def reclamation(reclamation_number):
             flash('Reclamation has been edited')
             return redirect(url_for('reclamation_bp.reclamation', reclamation_number=str(rec.id)))
 
-    return render_template('reclamation/reclamation.html', form=form, requester=requester, status=status, rec=rec)
+    return render_template('reclamation/reclamation.html', form=form, requester=requester, status=status, rec=rec,
+                           form_ticket=form_create_ticket)
 
 
 @bp.route('/all')
@@ -114,55 +117,6 @@ def all_reclamations(page_num=1):
     reclamations = Reclamation.query.order_by(Reclamation.finished_date). \
         paginate(page=page_num, per_page=current_app.config['ELEMENTS_PER_PAGE'], error_out=False)
     return render_template('reclamation/all.html', reclamations=reclamations)
-
-
-# jak już będzie działać ok, to przenieść do app.models
-class PartDetailsSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = PartDetails
-        include_fk = True
-        include_relationships = True
-        # load_instance = True
-
-
-class PartNoSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = PartNo
-        # include_fk = True
-        # include_relationships = True
-        # load_instance = True
-
-
-class UserSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = User
-
-
-class CustomerSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Customer
-
-
-class ReclamationSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Reclamation
-        # include_fk = True
-        include_relationships = True
-        load_instance = True
-        exclude = ('customer_id', 'part_sn_id', 'requester')
-
-    reclamation_requester = fields.Nested(UserSchema, only=('username','first_name', 'last_name'))
-    reclamation_customer = fields.Nested(CustomerSchema, only=('name',))
-    reclamation_part_sn_id = fields.Nested(PartDetailsSchema, only=('part_sn','part_no.model'))
-
-    _links = Hyperlinks({'self': URLFor('reclamation_bp.reclamation', reclamation_number='<id>')})
-
-
-user_schema = UserSchema(many=True)
-customer_schema = CustomerSchema(many=True)
-part_no_schema = PartNoSchema(many=True)
-part_detail_schema = PartDetailsSchema(many=True)
-reclamation_schema = ReclamationSchema(many=True)
 
 
 @bp.route('/reclamation_get_data', methods=['GET', 'POST'])

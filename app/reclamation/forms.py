@@ -62,3 +62,7 @@ class ReadOnlyReclamationForm(EditReclamationForm):
         read_only(self.part_prod_date)
         read_only(self.description)
         read_only(self.finished_date)
+
+
+class CreateTickedForm(FlaskForm):
+    submit = SubmitField('Create ticket')

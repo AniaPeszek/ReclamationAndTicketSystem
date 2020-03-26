@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 
 {% block styles %}
@@ -9,17 +10,18 @@
 
 {% block app_content %}
     <div class="container">
-        <h1>{{ _('Reclamations') }}</h1>
-        <table class="table table-hover display" style="width:100%;" id="reclamation_table">
+        <h1>{{ _('Tickets') }}</h1>
+        <table class="table table-hover display" style="width:100%;" id="ticket_table">
             <thead class="thead-dark">
             <tr>
                 <th scope="col">{{ _('ID') }}</th>
-                <th scope="col">{{ _('Informed Date') }}</th>
+                <th scope="col">{{ _('Creation Date') }}</th>
                 <th scope="col">{{ _('Due Date') }}</th>
                 <th scope="col">{{ _('Finished Date') }}</th>
                 <th scope="col">{{ _('Status') }}</th>
-                <th scope="col">{{ _('Customer') }}</th>
-                <th scope="col">{{ _('Part Serial Number') }}</th>
+                <th scope="col">{{ _('Reclamation Customer') }}</th>
+                <th scope="col">{{ _('Reclamation ID') }}</th>
+                <th scope="col">{{ _('Assigned') }}</th>
                 <th scope="col">{{ _('Description') }}</th>
             </tr>
             </thead>
@@ -36,17 +38,17 @@
 
         function setupData() {
             $(document).ready(function () {
-                oTable = $('#reclamation_table').DataTable({
+                oTable = $('#ticket_table').DataTable({
                     "ajax": {
-                        "url": "/reclamation_get_data",
+                        "url": "/tickets_get_data",
                         "dataType": "json",
-                        "dataSrc": "reclamations",
+                        "dataSrc": "tickets",
                         "contentType": "application/json"
                     },
                     "columns": [
                         {"data": "id"},
                         {
-                            "data": "informed_date", render: function (data) {
+                            "data": "creation_date", render: function (data) {
                                 return moment(data).format('L')
                             }
                         },
@@ -73,9 +75,12 @@
                                 }
                             }
                         },
-                        {"data": "reclamation_customer.name"},
-                        {"data": "reclamation_part_sn_id.part_sn"},
-                        {"data": "description_reclamation", render: function (data, type) {
+                        {"data": "reclamation.reclamation_customer.name"},
+                        {"data" : "reclamation_id"},
+                        {"data": "ticket_assigned", render: function (data, type, row) {
+                            return row.ticket_assigned.first_name +' '+ row.ticket_assigned.last_name;
+                            }},
+                        {"data": "description_ticket", render: function (data, type) {
                                 return type === 'display' && data.length > 40 ?
                                     '<span title="' + data + '">' + data.substr(0, 38) + '...</span>' :
                                     data;
@@ -94,7 +99,7 @@
         $(window).on("load", setupData);
 
         $(document).ready(function () {
-            $('#reclamation_table').on('click', 'tbody tr', function (evt) {
+            $('#ticket_table').on('click', 'tbody tr', function (evt) {
                 var $cell = $(evt.target).closest('td');
                 if ($cell.index() > 0) {
                     window.location = oTable.row(this).data()._links.self

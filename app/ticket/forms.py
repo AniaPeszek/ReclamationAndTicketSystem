@@ -70,3 +70,9 @@ class ReadOnlyTicketForm(EditTicketForm):
         read_only(self.due_date)
         read_only(self.description_ticket)
         read_only(self.finished_date)
+
+
+class TicketFromReclamationForm(TicketForm):
+    def __init__(self, *args, **kwargs):
+        super(TicketFromReclamationForm, self).__init__(*args, **kwargs)
+        read_only(self.reclamation)

@@ -1,32 +1,49 @@
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, jsonify
 from flask_login import login_required, current_user
 from datetime import datetime
 from flask_babelex import _
 
 from app import db
-from app.models import Ticket
+from app.models import Ticket, Reclamation
 from app.ticket import bp
-from app.ticket.forms import TicketForm, EditTicketForm, AssignedUserTicketForm, ReadOnlyTicketForm, RequesterTicketForm
+from app.ticket.forms import TicketForm, EditTicketForm, AssignedUserTicketForm, ReadOnlyTicketForm, \
+    RequesterTicketForm, TicketFromReclamationForm
 from app.users.notification import send_message
+from app.models_serialized import ticket_schema
 
 
-@bp.route('/ticket', methods=['GET', 'POST'])
+@bp.route('/new_ticket/<rec_id>', methods=['GET', 'POST'])
 @login_required
-def new_ticket():
-    form = TicketForm()
+def new_ticket(rec_id=0):
+    if rec_id == 0:
+        form = TicketForm()
+        if form.validate_on_submit():
+            new_ticket = Ticket(ticket_requester=current_user,
+                                ticket_assigned=form.assigned_employee.data,
+                                due_date=form.due_date.data,
+                                description_ticket=form.description_ticket.data,
+                                reclamation=form.reclamation.data)
+            db.session.add(new_ticket)
+            db.session.commit()
+            send_message(Ticket, new_ticket.id, new_ticket.ticket_assigned)
+            return redirect(url_for('ticket_bp.ticket', ticket_number=str(new_ticket.id)))
+    else:
+        form = TicketFromReclamationForm()
+        reclamation = Reclamation.query.filter_by(id=int(rec_id)).first_or_404()
+        # reclamation = Reclamation.query.filter_by(id=1).first_or_404()
 
-    if form.validate_on_submit():
-        new_ticket = Ticket(ticket_requester=current_user,
-                            ticket_assigned=form.assigned_employee.data,
-                            due_date=form.due_date.data,
-                            description_ticket=form.description_ticket.data,
-                            reclamation=form.reclamation.data)
-        db.session.add(new_ticket)
-        db.session.commit()
-        send_message(Ticket, new_ticket.id, new_ticket.ticket_assigned)
-        return redirect(url_for('ticket_bp.ticket', ticket_number=str(new_ticket.id)))
-
-    return render_template('ticket/new_ticket.html', form=form)
+        form.reclamation.data = reclamation
+        if form.validate_on_submit():
+            new_ticket = Ticket(ticket_requester=current_user,
+                                ticket_assigned=form.assigned_employee.data,
+                                due_date=form.due_date.data,
+                                description_ticket=form.description_ticket.data,
+                                reclamation=reclamation)
+            db.session.add(new_ticket)
+            db.session.commit()
+            send_message(Ticket, new_ticket.id, new_ticket.ticket_assigned)
+            return redirect(url_for('ticket_bp.ticket', ticket_number=str(new_ticket.id)))
+        return render_template('ticket/new_ticket.html', form=form)
 
 
 @bp.route('/ticket/<ticket_number>', methods=['GET', 'POST'])
@@ -38,9 +55,9 @@ def ticket(ticket_number):
 
     if current_user.id == ticket.ticket_requester.id:
         form = RequesterTicketForm(formdata=request.form,
-                              obj=ticket,
-                              assigned_employee=ticket.ticket_assigned,
-                              reclamation=ticket.reclamation)
+                                   obj=ticket,
+                                   assigned_employee=ticket.ticket_assigned,
+                                   reclamation=ticket.reclamation)
     elif current_user.id == ticket.ticket_assigned.id:
         form = AssignedUserTicketForm(formdata=request.form,
                                       obj=ticket,
@@ -73,3 +90,17 @@ def ticket(ticket_number):
             flash('Ticket has been edited')
             return redirect(url_for('ticket_bp.ticket', ticket_number=str(ticket.id)))
     return render_template('ticket/ticket.html', form=form, requester=requester, status=status, ticket=ticket)
+
+
+@bp.route('/tickets_get_data', methods=['GET', 'POST'])
+@login_required
+def tickets_data():
+    tickets = Ticket.query.all()
+    output = ticket_schema.dump(tickets)
+    return jsonify({"tickets": output})
+
+
+@bp.route('/tickets/all', methods=['GET', 'POST'])
+@login_required
+def tickets_all():
+    return render_template('ticket/tickets_all.html')
