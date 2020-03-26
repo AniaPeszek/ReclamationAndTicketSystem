@@ -1,8 +1,8 @@
-"""Initialize database
+"""first migration
 
-Revision ID: 99b4a6ca9c37
+Revision ID: 97c038fd7242
 Revises: 
-Create Date: 2020-03-25 11:52:46.366825
+Create Date: 2020-03-25 17:42:26.492073
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '99b4a6ca9c37'
+revision = '97c038fd7242'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -133,17 +133,17 @@ def upgrade():
     op.create_index(op.f('ix_reclamation_informed_date'), 'reclamation', ['informed_date'], unique=False)
     op.create_table('ticket',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('requester', sa.Integer(), nullable=False),
-    sa.Column('assigned_employee', sa.Integer(), nullable=False),
+    sa.Column('requester_id', sa.Integer(), nullable=False),
+    sa.Column('assigned_employee_id', sa.Integer(), nullable=False),
     sa.Column('creation_date', sa.DateTime(), nullable=True),
     sa.Column('due_date', sa.DateTime(), nullable=True),
     sa.Column('finished_date', sa.DateTime(), nullable=True),
     sa.Column('description_ticket', sa.String(length=512), nullable=False),
     sa.Column('status', sa.Integer(), nullable=False),
     sa.Column('reclamation_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['assigned_employee'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['assigned_employee_id'], ['user.id'], ),
     sa.ForeignKeyConstraint(['reclamation_id'], ['reclamation.id'], ),
-    sa.ForeignKeyConstraint(['requester'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['requester_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_ticket_creation_date'), 'ticket', ['creation_date'], unique=False)

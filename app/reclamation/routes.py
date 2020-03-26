@@ -5,10 +5,10 @@ from flask_login import current_user, login_required
 from app import db, ma
 from app.models import PartDetails, Reclamation, Customer, PartNo, User
 from app.reclamation import bp
-from app.reclamation.forms import ReclamationForm, EditReclamationForm, ReadOnlyReclamationForm
+from app.reclamation.forms import ReclamationForm, EditReclamationForm, ReadOnlyReclamationForm, Customer
 
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
-from flask_marshmallow.fields import Hyperlinks, URLFor
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, field_for, auto_field
+from flask_marshmallow.fields import Hyperlinks, URLFor, fields
 
 
 @bp.route('/reclamation', methods=['GET', 'POST'])
@@ -120,12 +120,17 @@ def all_reclamations(page_num=1):
 class PartDetailsSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = PartDetails
-        # include_fk = True
+        include_fk = True
+        include_relationships = True
+        # load_instance = True
 
 
 class PartNoSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = PartNo
+        # include_fk = True
+        # include_relationships = True
+        # load_instance = True
 
 
 class UserSchema(ma.SQLAlchemyAutoSchema):
@@ -133,15 +138,28 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         model = User
 
 
+class CustomerSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Customer
+
+
 class ReclamationSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Reclamation
         # include_fk = True
+        include_relationships = True
+        load_instance = True
+        exclude = ('customer_id', 'part_sn_id', 'requester')
 
-    _links = Hyperlinks({'self': URLFor('reclamation_bp.reclamation', reclamation_number=str(id))})
+    reclamation_requester = fields.Nested(UserSchema, only=('username','first_name', 'last_name'))
+    reclamation_customer = fields.Nested(CustomerSchema, only=('name',))
+    reclamation_part_sn_id = fields.Nested(PartDetailsSchema, only=('part_sn','part_no.model'))
+
+    _links = Hyperlinks({'self': URLFor('reclamation_bp.reclamation', reclamation_number='<id>')})
 
 
 user_schema = UserSchema(many=True)
+customer_schema = CustomerSchema(many=True)
 part_no_schema = PartNoSchema(many=True)
 part_detail_schema = PartDetailsSchema(many=True)
 reclamation_schema = ReclamationSchema(many=True)

@@ -48,8 +48,8 @@ def messages(page_num):
     # prev_url = url_for('users.messages', pag
     # e=messages.prev_num) \
     #     if messages.has_prev else None
-    return render_template('users/messages.html', messages=messages)
-    # return render_template('users/messages.html', messages=messages.items,
+    return render_template('users/notificatios.html', messages=messages)
+    # return render_template('users/notificatios.html', messages=messages.items,
     #                        next_url=next_url, prev_url=prev_url)
 
 @bp.route('/notifications')

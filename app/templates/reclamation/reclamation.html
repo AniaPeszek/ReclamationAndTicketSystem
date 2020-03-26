@@ -12,14 +12,14 @@
             <h3>Status: {{ status }}</h3>
             <form method="POST">
                 {{ form.csrf_token() }}
-                {{ render_field(form.customer) }}
-                {{ render_field(form.informed_date) }}
-                {{ render_field(form.due_date) }}
-                {{ render_field(form.part_model) }}
-                {{ render_field(form.part_sn) }}
-                {{ render_field(form.part_prod_date) }}
-                {{ render_field(form.description) }}
-                {{ render_field(form.finished_date) }}
+                {{ render_field(form.customer, horizontal_columns=('lg', 3, 9)) }}
+                {{ render_field(form.informed_date, horizontal_columns=('lg', 3, 9)) }}
+                {{ render_field(form.due_date, horizontal_columns=('lg', 3, 9)) }}
+                {{ render_field(form.part_model, horizontal_columns=('lg', 3, 9)) }}
+                {{ render_field(form.part_sn, horizontal_columns=('lg', 3, 9)) }}
+                {{ render_field(form.part_prod_date, horizontal_columns=('lg', 3, 9)) }}
+                {{ render_field(form.description, horizontal_columns=('lg', 3, 9)) }}
+                {{ render_field(form.finished_date, horizontal_columns=('lg', 3, 9)) }}
                 {% if current_user.id == rec.reclamation_requester.id %}
                     {{ render_field(form.submit) }}
                 {% endif %}

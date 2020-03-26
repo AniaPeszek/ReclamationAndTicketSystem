@@ -10,21 +10,21 @@
         <div class="col-md-9">
             <h3>Requester: {{ requester }}</h3>
             <h3>Status: {{ status }}</h3>
-            <form method="POST">
-                {{ form.csrf_token() }}
-                {{ render_field(form.assigned_employee) }}
-                {{ render_field(form.reclamation_id) }}
-                {{ render_field(form.due_date) }}
-                {{ render_field(form.description_ticket) }}
-                {{ render_field(form.finished_date) }}
-                {% if current_user.id == ticket.ticket_requester.id  or current_user.id == rec.ticket_assigned.id %}
-                    {{ render_field(form.submit) }}
-                {% endif %}
-
-
-
-            </form>
-{#            {{ render_form(form, form_type='horizontal', horizontal_columns=('lg', 3, 9)) }}#}
+{#            <form method="POST">#}
+{#                {{ form.csrf_token() }}#}
+{#                {{ render_field(form.assigned_employee) }}#}
+{#                {{ render_field(form.reclamation) }}#}
+{#                {{ render_field(form.due_date) }}#}
+{#                {{ render_field(form.description_ticket) }}#}
+{#                {{ render_field(form.finished_date) }}#}
+{#                {% if current_user.id == ticket.ticket_requester.id  or current_user.id == ticket.ticket_assigned.id %}#}
+{#                    {{ render_field(form.submit) }}#}
+{#                {% endif %}#}
+{##}
+{##}
+{##}
+{#            </form>#}
+            {{ render_form(form, form_type='horizontal', horizontal_columns=('lg', 3, 9)) }}
         </div>
     </div>
 

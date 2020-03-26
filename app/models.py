@@ -43,9 +43,9 @@ class User(UserMixin, db.Model):
     team = db.relationship('Team', foreign_keys=team_id, backref='team_members')
     reclamation_req = db.relationship('Reclamation', backref='reclamation_requester', lazy='dynamic')
     ticket_req = db.relationship('Ticket', backref='ticket_requester', lazy='dynamic',
-                                 foreign_keys='[Ticket.requester]')
+                                 foreign_keys='[Ticket.requester_id]')
     ticket_ass = db.relationship('Ticket', backref='ticket_assigned', lazy='dynamic',
-                                 foreign_keys='[Ticket.assigned_employee]')
+                                 foreign_keys='[Ticket.assigned_employee_id]')
     note_draf = db.relationship('Note', backref='note_drafter', lazy='dynamic')
     part_no_person = db.relationship('PartNo', backref='part_no_person_in_charge', lazy='dynamic')
 
@@ -56,6 +56,7 @@ class User(UserMixin, db.Model):
                                         foreign_keys='Message.recipient_id',
                                         backref='recipient', lazy='dynamic')
     last_message_read_time = db.Column(db.DateTime)
+    last_ticket_read_time = db.Column(db.DateTime)
 
     notifications = db.relationship('Notification', backref='user',
                                     lazy='dynamic')
@@ -70,6 +71,10 @@ class User(UserMixin, db.Model):
         last_read_time = self.last_message_read_time or datetime(1900, 1, 1)
         return Message.query.filter_by(recipient=self).filter(
             Message.timestamp > last_read_time).count()
+
+    def new_tickets(self):
+        last_read_time = self.last_ticket_read_time or datetime(1900, 1, 1)
+        return Ticket.query.filter_by(ticket_assigned=self).filter(Ticket.creation_date > last_read_time).count()
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -160,8 +165,8 @@ class Reclamation(db.Model):
 
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    requester = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    assigned_employee = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    requester_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    assigned_employee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     creation_date = db.Column(db.DateTime, index=True)
     due_date = db.Column(db.DateTime, index=True)
     finished_date = db.Column(db.DateTime, index=True)

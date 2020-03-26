@@ -6,7 +6,8 @@ from flask_babelex import _
 from app import db
 from app.models import Ticket
 from app.ticket import bp
-from app.ticket.forms import TicketForm, EditTicketForm, AssignedUserTicketForm, ReadOnlyTicketForm
+from app.ticket.forms import TicketForm, EditTicketForm, AssignedUserTicketForm, ReadOnlyTicketForm, RequesterTicketForm
+from app.users.notification import send_message
 
 
 @bp.route('/ticket', methods=['GET', 'POST'])
@@ -19,10 +20,11 @@ def new_ticket():
                             ticket_assigned=form.assigned_employee.data,
                             due_date=form.due_date.data,
                             description_ticket=form.description_ticket.data,
-                            reclamation=form.reclamation_id.data)
+                            reclamation=form.reclamation.data)
         db.session.add(new_ticket)
         db.session.commit()
-        return redirect(url_for('ticket_bp.ticket', ticket_number=str(ticket.id)))
+        send_message(Ticket, new_ticket.id, new_ticket.ticket_assigned)
+        return redirect(url_for('ticket_bp.ticket', ticket_number=str(new_ticket.id)))
 
     return render_template('ticket/new_ticket.html', form=form)
 
@@ -35,24 +37,24 @@ def ticket(ticket_number):
     status = _("Open") if ticket.status == 0 else _("Closed")
 
     if current_user.id == ticket.ticket_requester.id:
-        form = EditTicketForm(formdata=request.form,
+        form = RequesterTicketForm(formdata=request.form,
                               obj=ticket,
                               assigned_employee=ticket.ticket_assigned,
-                              reclamation_id=ticket.reclamation)
+                              reclamation=ticket.reclamation)
     elif current_user.id == ticket.ticket_assigned.id:
         form = AssignedUserTicketForm(formdata=request.form,
                                       obj=ticket,
                                       assigned_employee=ticket.ticket_assigned,
-                                      reclamation_id=ticket.reclamation)
+                                      reclamation=ticket.reclamation)
     else:
         form = ReadOnlyTicketForm(formdata=request.form,
                                   obj=ticket,
                                   assigned_employee=ticket.ticket_assigned,
-                                  reclamation_id=ticket.reclamation)
+                                  reclamation=ticket.reclamation)
 
     if form.validate_on_submit():
-        ticket.assigned_employee = form.assigned_employee.data
-        ticket.reclamation_id = form.reclamation_id.data
+        ticket.ticket_assigned = form.assigned_employee.data
+        ticket.reclamation = form.reclamation.data
         ticket.due_date = form.due_date.data
         ticket.description_ticket = form.description_ticket.data
         ticket.finished_date = form.finished_date.data

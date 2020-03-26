@@ -2,14 +2,13 @@
     <thead class="thead-dark">
     <tr>
         <th scope="col">
-            {{ _('From  %(username)s, sent: %(when)s', username=msg.author.username,
-                        when=moment(msg.timestamp).format("LLL") ) }}
+            {{ _('%(when)s', when=moment(msg.timestamp).format("LLL") ) }}
         </th>
     </tr>
     </thead>
     <tbody>
     <tr>
-        <td scope="row">{{ msg.content }}</td>
+        <td scope="row">{{ msg.content | safe }}</td>
     </tr>
     </tbody>
 </table>

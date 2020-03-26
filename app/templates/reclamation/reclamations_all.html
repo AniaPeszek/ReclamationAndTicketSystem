@@ -16,6 +16,9 @@
                 <th scope="col">{{ _('Due Date') }}</th>
                 <th scope="col">{{ _('Finished Date') }}</th>
                 <th scope="col">{{ _('Status') }}</th>
+                <th scope="col">{{ _('Customer') }}</th>
+                <th scope="col">{{ _('Part Serial Number') }}</th>
+                <th scope="col">{{ _('Tickets') }}</th>
                 <th scope="col">{{ _('Description') }}</th>
             </tr>
             </thead>
@@ -27,6 +30,8 @@
     {{ super() }}
     <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.20/datatables.min.js"></script>
     <script>
+        var oTable;
+
         function setupData() {
             $(document).ready(function () {
                 oTable = $('#reclamation_table').DataTable({
@@ -57,7 +62,18 @@
                                 }
                             }
                         },
-                        {"data": "status"},
+                        {
+                            "data": "status", render: function (data) {
+                                if (data === 0) {
+                                    return "open"
+                                } else {
+                                    return "closed"
+                                }
+                            }
+                        },
+                        {"data": "reclamation_customer.name"},
+                        {"data": "reclamation_part_sn_id.part_sn"},
+                        {"data": "tickets"},
                         {"data": "description_reclamation"}
                     ],
                     lengthMenu: [
@@ -70,5 +86,11 @@
         }
 
         $(window).on("load", setupData);
+
+        $(document).ready(function () {
+            $('#reclamation_table').on('click', 'tbody tr', function () {
+                window.location = oTable.row(this).data()._links.self
+            });
+        });
     </script>
 {% endblock %}

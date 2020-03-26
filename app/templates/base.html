@@ -56,9 +56,6 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('reclamation_bp.reclamations_all') }}">{{ _('Reclamations') }}</a>
                         </li>
-{#                        <li class="nav-item">#}
-{#                            <a class="nav-link" href="{{ url_for('users.send_message') }}">{{ _('Send message') }}</a>#}
-{#                        </li>#}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('users.messages') }}">{{ _('Notifications') }}
                                 {% set new_messages = current_user.new_messages() %}
