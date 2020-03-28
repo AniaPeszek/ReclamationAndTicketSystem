@@ -37,7 +37,7 @@ def new_reclamation():
 
         reclamation = Reclamation.query.filter_by(id=new_reclamation.id).first_or_404()
 
-        return redirect(url_for('reclamation_bp.reclamation', reclamation_number=str(reclamation.id)))
+        return redirect(url_for('reclamation_bp.reclamation', reclamation_number=reclamation.id))
 
     return render_template('reclamation/new_reclamation.html', form=form)
 
@@ -47,6 +47,7 @@ def new_reclamation():
 def reclamation(reclamation_number):
     rec = Reclamation.query.get(reclamation_number)
     requester = rec.reclamation_requester.username
+    tickets = rec.tickets.all()
     status = _("Open") if rec.status == 0 else _("Closed")
     if current_user.id == rec.reclamation_requester.id:
         form = EditReclamationForm(formdata=request.form,
@@ -99,15 +100,15 @@ def reclamation(reclamation_number):
         try:
             if rec.finished_date < rec.informed_date:
                 flash('Finished date can not be earlier than Informed Date')
-                return redirect(url_for('reclamation_bp.reclamation', reclamation_number=str(rec.id)))
+                return redirect(url_for('reclamation_bp.reclamation', reclamation_number=rec.id))
         finally:
             db.session.add(rec)
             db.session.commit()
             flash('Reclamation has been edited')
-            return redirect(url_for('reclamation_bp.reclamation', reclamation_number=str(rec.id)))
+            return redirect(url_for('reclamation_bp.reclamation', reclamation_number=rec.id))
 
     return render_template('reclamation/reclamation.html', form=form, requester=requester, status=status, rec=rec,
-                           form_ticket=form_create_ticket)
+                           tickets=tickets, form_ticket=form_create_ticket)
 
 
 @bp.route('/all')

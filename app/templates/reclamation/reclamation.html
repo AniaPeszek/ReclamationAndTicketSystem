@@ -5,19 +5,19 @@
 
 {% block app_content %}
     <div class="row">
-            <div class="col-md-3">
-                <h1>{{ _('Reclamation') }}</h1>
-            </div>
-            <div class="col-md-3">
-                {{ render_form(form_ticket) }}
-            </div>
+        <div class="col-md-3">
+            <h1>{{ _('Reclamation') }}</h1>
+            <h3>Requester: {{ requester }}</h3>
+            <h3>Status: {{ status }}</h3>
+        </div>
+        <div class="col-md-3">
+            {{ render_form(form_ticket) }}
+        </div>
     </div>
 
 
     <div class="row">
-        <div class="col-md-9">
-            <h3>Requester: {{ requester }}</h3>
-            <h3>Status: {{ status }}</h3>
+        <div class="col-md-5">
             <form method="POST">
                 {{ form.csrf_token() }}
                 {{ render_field(form.customer, horizontal_columns=('lg', 3, 9)) }}
@@ -31,11 +31,69 @@
                 {% if current_user.id == rec.reclamation_requester.id %}
                     {{ render_field(form.submit) }}
                 {% endif %}
-
-
             </form>
-            {#            {{ render_form(form, form_type='horizontal', horizontal_columns=('lg', 3, 9)) }}#}
+        </div>
+        <div class="col-md-6">
+            <p><b>Tickets linked</b></p>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Creation Date</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for ticket in tickets %}
+                    {% if ticket.status == 0 %}
+                        <tr class="table-danger" data-href={{ url_for('ticket_bp.ticket', ticket_number=ticket.id) }}>
+                            {% else %}
+                        <tr class="table-success" data-href={{ url_for('ticket_bp.ticket', ticket_number=ticket.id) }}>
+                    {% endif %}
 
+                <th scope="row">{{ ticket.id }}</th>
+                <td>{{ ticket.creation_date.date() }}</td>
+                <td>{{ ticket.description_ticket }}</td>
+
+                {% if ticket.status == 0 %}
+                    <td>Open</td>
+                {% else %}
+                    <td>Closed</td>
+                {% endif %}
+
+
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+            </table>
         </div>
     </div>
+{% endblock %}
+
+{#            {% for ticket in tickets %}#}
+{#                <p>#}
+{#                    {% set ticket_description = ticket.id|string + " " + |string + " " + ticket.description_ticket %}#}
+{#                    <a href="{{ url_for('ticket_bp.ticket',ticket_number=ticket.id) }}">{{ ticket_description}}</a>#}
+{#                </p>#}
+{#            {% endfor %}#}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        jQuery(document).ready(function ($) {
+            $(".table-danger").click(function () {
+                window.location = $(this).data("href");
+            });
+        });
+    </script>
+    <script>
+        jQuery(document).ready(function ($) {
+            $(".table-success").click(function () {
+                window.location = $(this).data("href");
+            });
+        });
+    </script>
 {% endblock %}
