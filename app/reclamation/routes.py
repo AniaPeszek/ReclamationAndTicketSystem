@@ -6,7 +6,8 @@ from app import db
 from app.models import PartDetails, Reclamation
 from app.models_serialized import reclamation_schema
 from app.reclamation import bp
-from app.reclamation.forms import ReclamationForm, EditReclamationForm, ReadOnlyReclamationForm, CreateTickedForm
+from app.reclamation.forms import ReclamationForm, EditReclamationForm, ReadOnlyReclamationForm
+from app.users.notification import send_message
 
 
 @bp.route('/reclamation', methods=['GET', 'POST'])
@@ -33,6 +34,12 @@ def new_reclamation():
 
         db.session.add(new_reclamation)
         db.session.commit()
+
+        part = new_reclamation.reclamation_part_sn_id
+        if part.part_no.part_no_person_in_charge:
+            recepient = part.part_no.part_no_person_in_charge
+            send_message(Reclamation, new_reclamation.id, recepient)
+
         flash('Reclamation has been added')
 
         reclamation = Reclamation.query.filter_by(id=new_reclamation.id).first_or_404()
@@ -72,9 +79,6 @@ def reclamation(reclamation_number):
                                        description=rec.description_reclamation,
                                        finished_date=rec.finished_date, )
 
-    form_create_ticket = CreateTickedForm()
-    if form_create_ticket.validate_on_submit():
-        return redirect(url_for('ticket_bp.new_ticket', rec_id=rec.id))
 
     if form.validate_on_submit():
 
@@ -108,7 +112,7 @@ def reclamation(reclamation_number):
             return redirect(url_for('reclamation_bp.reclamation', reclamation_number=rec.id))
 
     return render_template('reclamation/reclamation.html', form=form, requester=requester, status=status, rec=rec,
-                           tickets=tickets, form_ticket=form_create_ticket)
+                           tickets=tickets)
 
 
 @bp.route('/all')

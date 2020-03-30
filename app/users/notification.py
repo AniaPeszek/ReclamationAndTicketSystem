@@ -11,17 +11,15 @@ def send_message(EventClass, event_id, recipient):
                       recipient=recipient,
                       content=content)
         db.session.add(msg)
-        recipient.add_notification('new_ticket_count', recipient.new_tickets())
+        # recipient.add_notification('new_ticket_count', recipient.new_tickets())
+        recipient.add_notification('open_tickets_count', recipient.open_tickets())
         db.session.commit()
     if EventClass == Reclamation:
         content = create_msg_body_for_new_reclamation(event_id)
-        # recipient = User.query.get(form.recipient.data.id)
         msg = Message(author=current_user,
                       recipient=recipient,
                       content=content)
         db.session.add(msg)
-        # tu dołożyć new_reclamation jak ticket będzie działał ok
-        recipient.add_notification('new_reclamation_count', recipient.new_tickets())
         db.session.commit()
 
 
@@ -37,4 +35,6 @@ Go to <a href="{link}">ticket.</a> '''
 
 def create_msg_body_for_new_reclamation(event_id):
     link = url_for('reclamation_bp.reclamation', reclamation_number=event_id)
-    return f'You have new reclamation.<br>Go to <a href="{link}">reclamation.</a> '
+    reclamation = Reclamation.query.filter_by(id=event_id).first()
+    model = reclamation.reclamation_part_sn_id.part_no.model
+    return f'You have a new reclamation for your part ({model}).<br>Go to <a href="{link}">reclamation.</a> '

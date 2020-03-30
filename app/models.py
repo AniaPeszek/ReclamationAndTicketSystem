@@ -65,6 +65,7 @@ class User(UserMixin, db.Model):
         self.notifications.filter_by(name=name).delete()
         n = Notification(name=name, payload_json=json.dumps(data), user=self)
         db.session.add(n)
+        db.session.commit()
         return n
 
     def new_messages(self):
@@ -75,6 +76,9 @@ class User(UserMixin, db.Model):
     def new_tickets(self):
         last_read_time = self.last_ticket_read_time or datetime(1900, 1, 1)
         return Ticket.query.filter_by(ticket_assigned=self).filter(Ticket.creation_date > last_read_time).count()
+
+    def open_tickets(self):
+        return Ticket.query.filter_by(ticket_assigned=self).filter_by(status=0).count()
 
     def __repr__(self):
         return f'<User {self.username}>'

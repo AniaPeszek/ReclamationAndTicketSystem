@@ -38,8 +38,6 @@ def create_app(config_class=Config):
     moment.init_app(app)
     ma.init_app(app)
 
-    f_admin = Admin(app, name='ERP - Admin', index_view=MyAdminIndexView(), template_mode='bootstrap3')
-
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)
 
@@ -49,9 +47,8 @@ def create_app(config_class=Config):
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
 
+    f_admin = Admin(app, name='ERP - Admin', index_view=MyAdminIndexView(), template_mode='bootstrap3')
     init_admin(f_admin)
-    from app.admin import bp as admin_bp
-    app.register_blueprint(admin_bp)
 
     from app.users import bp as users_bp
     app.register_blueprint(users_bp, url_prefix='/users')

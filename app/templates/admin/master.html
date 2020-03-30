@@ -1,0 +1,52 @@
+{% extends admin_base_template %}
+
+{% block head_css %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/flask_admin_view.css', _external=True) }}">
+{% endblock %}
+{% block page_body %}
+    <div class="container-fullwidth">
+        <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
+            <div class="container">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse"
+                            data-target="#admin-navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    {% block brand %}
+                        <a class="navbar-brand" href="{{url_for('admin.index')}}">{{ admin_view.admin.name }}</a>
+                    {% endblock %}
+                </div>
+                <!-- navbar content -->
+                <div class="collapse navbar-collapse" id="admin-navbar-collapse">
+                    {% block main_menu %}
+                        <ul class="nav navbar-nav">
+                            {{ layout.menu() }}
+                        </ul>
+                    {% endblock %}
+
+                    {% block menu_links %}
+                        <ul class="nav navbar-right">
+                            {{ layout.menu_links() }}
+                        </ul>
+                    {% endblock %}
+                    {% block access_control %}
+                    {% endblock %}
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div class="container">
+        {% block messages %}
+            {{ layout.messages() }}
+        {% endblock %}
+
+        {% set render_ctx = h.resolve_ctx() %}
+
+        {% block body %}{% endblock %}
+    </div>
+{% endblock %}

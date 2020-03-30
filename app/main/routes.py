@@ -21,6 +21,7 @@ def index():
     if current_user.is_authenticated:
         messages = current_user.messages_received.order_by(
             Message.timestamp.desc()).limit(5)
+        current_user.add_notification('open_tickets_count', current_user.open_tickets())
 
         return render_template('main/index.html', title=_('Homepage'), messages=messages)
     return render_template('main/index.html', title=_('Homepage'))

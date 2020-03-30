@@ -53,7 +53,7 @@ class EditReclamationForm(FlaskForm):
 
 class ReadOnlyReclamationForm(EditReclamationForm):
     def __init__(self, *args, **kwargs):
-        super(EditReclamationForm, self).__init__(*args, **kwargs)
+        super(ReadOnlyReclamationForm, self).__init__(*args, **kwargs)
         read_only(self.customer)
         read_only(self.informed_date)
         read_only(self.due_date)
@@ -62,7 +62,3 @@ class ReadOnlyReclamationForm(EditReclamationForm):
         read_only(self.part_prod_date)
         read_only(self.description)
         read_only(self.finished_date)
-
-
-class CreateTickedForm(FlaskForm):
-    submit = SubmitField('Create ticket')

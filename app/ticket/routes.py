@@ -30,7 +30,6 @@ def new_ticket(rec_id=0):
     else:
         form = TicketFromReclamationForm()
         reclamation = Reclamation.query.filter_by(id=int(rec_id)).first_or_404()
-        # reclamation = Reclamation.query.filter_by(id=1).first_or_404()
 
         form.reclamation.data = reclamation
         if form.validate_on_submit():

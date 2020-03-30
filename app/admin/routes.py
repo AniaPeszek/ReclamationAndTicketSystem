@@ -1,6 +1,5 @@
 from werkzeug.security import generate_password_hash
 from app import db
-from app import admin
 from flask_admin import BaseView, expose, AdminIndexView
 from flask_admin.contrib import sqla
 from flask_admin.menu import MenuLink
@@ -12,7 +11,7 @@ from app.models import User, Role, Reclamation, Ticket, Note, PartNo, PartDetail
 
 
 def init_admin(f_admin):
-    admin.index_view = MyAdminIndexView()
+    f_admin.index_view = MyAdminIndexView()
     f_admin.add_view(UserAdminView(User, db.session, endpoint="user"))
     f_admin.add_view(RoleAdminView(Role, db.session))
     f_admin.add_view(ReclamationAdminView(Reclamation, db.session))
