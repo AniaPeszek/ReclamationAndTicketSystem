@@ -133,3 +133,17 @@ def tickets_data():
 @login_required
 def tickets_all():
     return render_template('ticket/tickets_all.html')
+
+
+@bp.route('/my_tickets')
+@login_required
+def my_tickets():
+    return render_template('ticket/my_tickets.html')
+
+
+@bp.route('/my_tickets_get_data', methods=['GET', 'POST'])
+@login_required
+def my_tickets_data():
+    tickets = Ticket.query.filter_by(assigned_employee_id=current_user.id).all()
+    output = ticket_schema.dump(tickets)
+    return jsonify({"tickets": output})

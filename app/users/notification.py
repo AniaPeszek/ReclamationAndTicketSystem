@@ -13,6 +13,7 @@ def send_message(EventClass, event_id, recipient):
         db.session.add(msg)
         # recipient.add_notification('new_ticket_count', recipient.new_tickets())
         recipient.add_notification('open_tickets_count', recipient.open_tickets())
+        recipient.add_notification('unread_message_count', recipient.new_messages())
         db.session.commit()
     if EventClass == Reclamation:
         content = create_msg_body_for_new_reclamation(event_id)
@@ -20,6 +21,7 @@ def send_message(EventClass, event_id, recipient):
                       recipient=recipient,
                       content=content)
         db.session.add(msg)
+        recipient.add_notification('unread_message_count', recipient.new_messages())
         db.session.commit()
 
 

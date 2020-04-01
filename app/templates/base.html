@@ -46,8 +46,8 @@
                                 class="sr-only">(current)</span></a>
                     </li>
                     {% if not current_user.is_anonymous %}
-                        <li class="nav-item {% if request.url_rule.endpoint == 'main.index' %} active {% endif %}">
-                            <a class="nav-link" href="{{ url_for('main.index') }}">{{ _('My tasks') }}
+                        <li class="nav-item {% if request.url_rule.endpoint == 'ticket_bp.my_tickets' %} active {% endif %}">
+                            <a class="nav-link" href="{{ url_for('ticket_bp.my_tickets') }}">{{ _('My tasks') }}
                                 {% set open_tickets = current_user.open_tickets() %}
                                 <span id="tickets_count" class="badge badge-primary">
                                         {{ open_tickets }} open
@@ -108,8 +108,11 @@
     {{ moment.lang(g.locale) }}
     <script>
         function set_message_count(n) {
-            $('#message_count').text(n);
+            $('#message_count').text(n+' new');
             $('#message_count').css('visibility', n ? 'visible' : 'hidden');
+        }
+        function set_ticket_count(n) {
+            $('#tickets_count').text(n+' open');
         }
 
         {% if current_user.is_authenticated %}
@@ -121,7 +124,7 @@
                             for (var i = 0; i < notifications.length; i++) {
                                 if (notifications[i].name == 'unread_message_count')
                                     set_message_count(notifications[i].data);
-                                since = notifications[i].timestamp
+                                since = notifications[i].timestamp;
                                 if (notifications[i].name == 'open_tickets_count')
                                     set_ticket_count(notifications[i].data);
                             }

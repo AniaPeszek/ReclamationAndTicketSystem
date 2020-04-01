@@ -65,7 +65,7 @@ class User(UserMixin, db.Model):
         self.notifications.filter_by(name=name).delete()
         n = Notification(name=name, payload_json=json.dumps(data), user=self)
         db.session.add(n)
-        db.session.commit()
+        # db.session.commit()
         return n
 
     def new_messages(self):

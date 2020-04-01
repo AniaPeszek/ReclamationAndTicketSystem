@@ -59,7 +59,7 @@ class TicketSchema(ma.SQLAlchemyAutoSchema):
         include_fk = True
 
     ticket_assigned = fields.Nested(UserSchema, only=('username', 'first_name', 'last_name'))
-    reclamation = fields.Nested(ReclamationSchema, only=('reclamation_customer',))
+    reclamation = fields.Nested(ReclamationSchema, only=('reclamation_customer','reclamation_part_sn_id'))
     _links = Hyperlinks({'self': URLFor('ticket_bp.ticket', ticket_number='<id>')})
 
 
