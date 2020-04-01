@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import SubmitField, StringField, TextAreaField, validators
-from wtforms.fields.html5 import DateField
+from wtforms.fields.html5 import DateField, DateTimeField
 from wtforms_sqlalchemy.fields import QuerySelectField
 from wtforms_components import read_only
 
@@ -46,7 +46,8 @@ class EditReclamationForm(FlaskForm):
     part_sn = StringField('Serial Number')
     part_prod_date = DateField('Part Production Date', format='%Y-%m-%d')
     description = TextAreaField('Description of the issue')
-    finished_date = DateField('Finished Date', format='%Y-%m-%d', validators=[validators.Optional()])
+    finished_date = DateTimeField('Finished Date', format='%Y-%m-%d %H:%M', validators=[validators.Optional()],
+                                  render_kw={'readonly': True})
 
     submit = SubmitField('Edit the claim')
 
@@ -62,3 +63,11 @@ class ReadOnlyReclamationForm(EditReclamationForm):
         read_only(self.part_prod_date)
         read_only(self.description)
         read_only(self.finished_date)
+
+
+class CloseReclamationForm(FlaskForm):
+    submit = SubmitField('Close reclamation')
+
+
+class ReopenReclamationForm(FlaskForm):
+    submit = SubmitField('Re-open reclamation')

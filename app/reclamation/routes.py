@@ -1,12 +1,14 @@
 from flask import render_template, flash, redirect, url_for, request, jsonify, current_app
 from flask_babelex import _
 from flask_login import current_user, login_required
+from datetime import datetime
 
 from app import db
 from app.models import PartDetails, Reclamation
 from app.models_serialized import reclamation_schema
 from app.reclamation import bp
-from app.reclamation.forms import ReclamationForm, EditReclamationForm, ReadOnlyReclamationForm
+from app.reclamation.forms import ReclamationForm, EditReclamationForm, ReadOnlyReclamationForm, CloseReclamationForm, \
+    ReopenReclamationForm
 from app.users.notification import send_message
 
 
@@ -55,18 +57,51 @@ def reclamation(reclamation_number):
     rec = Reclamation.query.get(reclamation_number)
     requester = rec.reclamation_requester.username
     tickets = rec.tickets.all()
-    status = _("Open") if rec.status == 0 else _("Closed")
+    close_form = CloseReclamationForm()
+    open_form = ReopenReclamationForm()
+
     if current_user.id == rec.reclamation_requester.id:
-        form = EditReclamationForm(formdata=request.form,
-                                   obj=rec,
-                                   customer=rec.reclamation_customer,
-                                   informed_date=rec.informed_date,
-                                   due_date=rec.due_date,
-                                   part_model=rec.reclamation_part_sn_id.part_no,
-                                   part_sn=rec.reclamation_part_sn_id.part_sn,
-                                   part_prod_date=rec.reclamation_part_sn_id.production_date,
-                                   description=rec.description_reclamation,
-                                   finished_date=rec.finished_date, )
+
+        if rec.status == 0:
+            status = _("Open")
+            form = EditReclamationForm(formdata=request.form,
+                                       obj=rec,
+                                       customer=rec.reclamation_customer,
+                                       informed_date=rec.informed_date,
+                                       due_date=rec.due_date,
+                                       part_model=rec.reclamation_part_sn_id.part_no,
+                                       part_sn=rec.reclamation_part_sn_id.part_sn,
+                                       part_prod_date=rec.reclamation_part_sn_id.production_date,
+                                       description=rec.description_reclamation,
+                                       finished_date=rec.finished_date, )
+            if close_form.validate_on_submit():
+                rec.finished_date = datetime.utcnow()
+                rec.status = 1
+                db.session.add(rec)
+                db.session.commit()
+                flash('Reclamation has been closed')
+                return redirect(url_for('reclamation_bp.reclamation', reclamation_number=rec.id))
+        else:
+            status = _("Closed")
+            form = ReadOnlyReclamationForm(formdata=request.form,
+                                           obj=rec,
+                                           customer=rec.reclamation_customer,
+                                           informed_date=rec.informed_date,
+                                           due_date=rec.due_date,
+                                           part_model=rec.reclamation_part_sn_id.part_no,
+                                           part_sn=rec.reclamation_part_sn_id.part_sn,
+                                           part_prod_date=rec.reclamation_part_sn_id.production_date,
+                                           description=rec.description_reclamation,
+                                           finished_date=rec.finished_date)
+            if open_form.validate_on_submit():
+                rec.finished_date = None
+                rec.status = 0
+                db.session.add(rec)
+                db.session.commit()
+                flash('Reclamation has been re-opened')
+                return redirect(url_for('reclamation_bp.reclamation', reclamation_number=rec.id))
+
+
     else:
         form = ReadOnlyReclamationForm(formdata=request.form,
                                        obj=rec,
@@ -77,8 +112,11 @@ def reclamation(reclamation_number):
                                        part_sn=rec.reclamation_part_sn_id.part_sn,
                                        part_prod_date=rec.reclamation_part_sn_id.production_date,
                                        description=rec.description_reclamation,
-                                       finished_date=rec.finished_date, )
-
+                                       finished_date=rec.finished_date)
+        if rec.status == 0:
+            status = _("Open")
+        else:
+            status = _("Closed")
 
     if form.validate_on_submit():
 
@@ -112,7 +150,7 @@ def reclamation(reclamation_number):
             return redirect(url_for('reclamation_bp.reclamation', reclamation_number=rec.id))
 
     return render_template('reclamation/reclamation.html', form=form, requester=requester, status=status, rec=rec,
-                           tickets=tickets)
+                           tickets=tickets, close_form=close_form, open_form=open_form)
 
 
 @bp.route('/all')

@@ -9,9 +9,17 @@
             <h1>{{ _('Reclamation') }}</h1>
             <h3>Requester: {{ requester }}</h3>
             <h3>Status: {{ status }}</h3>
+
+            {% if rec.status == 0 and  current_user.id == rec.reclamation_requester.id %}
+                {{ render_form(close_form, form_type='horizontal', horizontal_columns=('lg', 0, 1)) }}
+            {% elif rec.status == 1 and current_user.id == rec.reclamation_requester.id: %}
+                {{ render_form(open_form, form_type='horizontal', horizontal_columns=('lg', 0, 1)) }}
+            {% endif %}
+
         </div>
         <div class="col-md-3">
-            <a class="btn btn-primary" role="button" href="{{ url_for('ticket_bp.new_ticket', rec_id=rec.id) }}">Create ticket</a>
+            <a class="btn btn-primary" role="button" href="{{ url_for('ticket_bp.new_ticket', rec_id=rec.id) }}">Create
+                ticket</a>
         </div>
     </div>
 
@@ -73,12 +81,7 @@
     </div>
 {% endblock %}
 
-{#            {% for ticket in tickets %}#}
-{#                <p>#}
-{#                    {% set ticket_description = ticket.id|string + " " + |string + " " + ticket.description_ticket %}#}
-{#                    <a href="{{ url_for('ticket_bp.ticket',ticket_number=ticket.id) }}">{{ ticket_description}}</a>#}
-{#                </p>#}
-{#            {% endfor %}#}
+
 
 {% block scripts %}
     {{ super() }}
