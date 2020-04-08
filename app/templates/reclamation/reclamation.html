@@ -17,10 +17,6 @@
             {% endif %}
 
         </div>
-        <div class="col-md-3">
-            <a class="btn btn-primary" role="button" href="{{ url_for('ticket_bp.new_ticket', rec_id=rec.id) }}">Create
-                ticket</a>
-        </div>
     </div>
 
 
@@ -42,7 +38,11 @@
             </form>
         </div>
         <div class="col-md-6">
-            <p><b>Tickets linked</b></p>
+            <p><b>Tickets linked </b>
+                <a class="btn btn-primary btn-sm" role="button"
+                   href="{{ url_for('ticket_bp.new_ticket', rec_id=rec.id) }}">
+                    {{ _('Create new ticket') }}</a>
+            </p>
             <table class="table table-hover">
                 <thead>
                 <tr>

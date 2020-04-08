@@ -43,14 +43,8 @@ def messages(page_num):
         Message.timestamp.desc()).paginate(
         page=page_num, per_page=current_app.config['ELEMENTS_PER_PAGE'], error_out=False)
 
-    # next_url = url_for('users.messages', page=messages.next_num) \
-    #     if messages.has_next else None
-    # prev_url = url_for('users.messages', pag
-    # e=messages.prev_num) \
-    #     if messages.has_prev else None
     return render_template('users/notificatios.html', messages=messages)
-    # return render_template('users/notificatios.html', messages=messages.items,
-    #                        next_url=next_url, prev_url=prev_url)
+
 
 @bp.route('/notifications')
 @login_required

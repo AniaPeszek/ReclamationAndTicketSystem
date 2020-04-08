@@ -3,6 +3,7 @@
 {% block head_css %}
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/flask_admin_view.css', _external=True) }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 {% endblock %}
 {% block page_body %}
     <div class="container-fullwidth">

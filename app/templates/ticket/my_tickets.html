@@ -2,11 +2,10 @@
 
 {% block styles %}
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='/DataTables/datatables.min.css') }}"/>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='/scripts/jquery-ui/jquery-ui.min.css') }}"/>
+    <link rel="stylesheet" type="text/css"
+          href="{{ url_for('static', filename='/scripts/jquery-ui/jquery-ui.min.css') }}"/>
     {{ super() }}
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='/css/ticket_style.css') }}"/>
-
-    {#    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/ju-1.12.1/dt-1.10.20/r-2.2.3/sp-1.0.1/datatables.min.css"/>#}
 
 {% endblock %}
 
@@ -14,28 +13,52 @@
     <div class="container">
         <h1>{{ _('My tasks') }}</h1>
 
-        <div id="baseDateControl">
-            <div><b>{{ _('Date filters') }}</b></div>
-
-            <div class="dateControlBlock">
-                <label><b>{{ _('Creation Date: ') }}</b></label>
-                {{ _('between ') }} <input type="text" name="dateStart" id="dateStart" class="datepicker" size="8"/>
-                {{ _('and') }}
-                <input type="text" name="dateEnd" id="dateEnd" class="datepicker" size="8"/>
+        <div id="baseDateControl" class="row">
+            <div class="col-lg-6">
+                <table class="table table-sm">
+                    <thead>
+                    <tr>
+                        <th scope="col">{{ _('Date filters') }}</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <th scope="row">{{ _('Creation Date: ') }}</th>
+                        <td>
+                            {{ _('between ') }} <input type="text" name="dateStart" id="dateStart" class="datepicker"
+                                                       size="8"/>
+                            {{ _('and') }}
+                            <input type="text" name="dateEnd" id="dateEnd" class="datepicker" size="8"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">{{ _('Due Date: ') }}</th>
+                        <td>
+                            {{ _('between ') }} <input type="text" name="dateStart1" id="dateStart1" class="datepicker"
+                                                       size="8"/>
+                            {{ _('and') }}
+                            <input type="text" name="dateEnd1" id="dateEnd1" class="datepicker" size="8"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">{{ _('Finished Date: ') }}</th>
+                        <td>
+                            {{ _('between ') }} <input type="text" name="dateStart2" id="dateStart2" class="datepicker"
+                                                       size="8"/>
+                            {{ _('and') }}
+                            <input type="text" name="dateEnd2" id="dateEnd2" class="datepicker" size="8"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button type="button" id="clear">{{ _('Clear filters ') }}</button>
+                        </td>
+                        <td></td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="dateControlBlock">
-                <label><b>{{ _('Due Date: ') }}</b></label>
-                {{ _('between ') }} <input type="text" name="dateStart1" id="dateStart1" class="datepicker" size="8"/>
-                {{ _('and') }}
-                <input type="text" name="dateEnd1" id="dateEnd1" class="datepicker" size="8"/>
-            </div>
-            <div class="dateControlBlock">
-                <label><b>{{ _('Finished Date: ') }}</b></label>
-                {{ _('between ') }} <input type="text" name="dateStart2" id="dateStart2" class="datepicker" size="8"/>
-                {{ _('and') }}
-                <input type="text" name="dateEnd2" id="dateEnd2" class="datepicker" size="8"/>
-            </div>
-            <button type="button" id="clear">{{ _('Clear filters ') }}</button>
         </div>
 
 
@@ -76,10 +99,8 @@
 {% block scripts %}
     {{ super() }}
 
-    {#    <script type="text/javascript"#}
-    {#            src="https://cdn.datatables.net/v/ju-1.12.1/dt-1.10.20/r-2.2.3/sp-1.0.1/datatables.min.js"></script>#}
-
     <script type="text/javascript" src="{{ url_for('static', filename='DataTables/datatables.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='scripts/jquery-ui/jquery-ui.min.js') }}"></script>
+    <script type="text/javascript"
+            src="{{ url_for('static', filename='scripts/jquery-ui/jquery-ui.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='scripts/my_tickets_scripts.js') }}"></script>
 {% endblock %}

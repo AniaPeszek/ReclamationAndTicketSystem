@@ -8,6 +8,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL"
     ) or "sqlite:///" + os.path.join(basedir, "app.db?check_same_thread=False")
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     LANGUAGES = ['pl', 'en']
 
@@ -20,3 +21,10 @@ class Config:
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = ['mail@example.com']
 
+
+class TestingConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        "TEST_DATABASE_URL"
+    ) or "sqlite://"
+    WTF_CSRF_ENABLED = False

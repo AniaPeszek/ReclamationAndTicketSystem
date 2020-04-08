@@ -208,6 +208,9 @@ class Customer(db.Model):
 
     reclamation_cus = db.relationship('Reclamation', backref='reclamation_customer', lazy='dynamic')
 
+    def __repr__(self):
+        return self.name
+
 
 class PartDetails(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -216,6 +219,9 @@ class PartDetails(db.Model):
     part_sn = db.Column(db.String(120), unique=True)
 
     reclamation_p_sn = db.relationship('Reclamation', backref='reclamation_part_sn_id', lazy='dynamic')
+
+    def __repr__(self):
+        return f'Part SN:{self.part_sn}, ID:{self.id}'
 
 
 class PartNo(db.Model):
@@ -226,6 +232,9 @@ class PartNo(db.Model):
 
     part_no_list = db.relationship('PartDetails', backref='part_no', lazy='dynamic')
 
+    def __repr__(self):
+        return f'Model: {self.model}, from: {self.manufacturer}'
+
 
 class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -233,6 +242,9 @@ class Team(db.Model):
     team_leader_id = db.Column(db.Integer, db.ForeignKey('user.id', use_alter=True, name='fk_team_leader_id'))
 
     team_leader = db.relationship('User', foreign_keys=team_leader_id, post_update=True)
+
+    def __repr__(self):
+        return f'{self.team_name}'
 
 
 class Message(db.Model):
