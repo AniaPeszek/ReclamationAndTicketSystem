@@ -10,11 +10,7 @@
 
         {% block styles %}
             {{ bootstrap.load_css() }}
-            <style type="text/css">
-                body {
-                    background: #f5f5f0 !important;
-                }
-            </style>
+            <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='/css/base_style.css') }}"/>
         {% endblock %}
         <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 
@@ -35,7 +31,8 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand mb-0 h1" href="{{ url_for('main.index') }}">
-                <img src="{{ url_for('static', filename='/images/logo.png') }}" width="30" height="30" class="d-inline-block align-top" alt="logo" > ERP</a>
+                <img src="{{ url_for('static', filename='/images/logo.png') }}" width="30" height="30"
+                     class="d-inline-block align-top" alt="logo"> ERP</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
                     aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -48,14 +45,24 @@
                                 class="sr-only">(current)</span></a>
                     </li>
                     {% if not current_user.is_anonymous %}
-                        <li class="nav-item {% if request.url_rule.endpoint == 'ticket_bp.my_tickets' %} active {% endif %}">
-                            <a class="nav-link" href="{{ url_for('ticket_bp.my_tickets') }}">{{ _('My tasks') }}
+                        <li class="nav-item dropdown {% if request.url_rule.endpoint in
+                        ['ticket_bp.my_tickets', 'ticket_bp.requested_tickets','ticket_bp.tickets_all'] %}
+                        active {% endif %}">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                {{ _('Tickets') }}
                                 {% set open_tickets = current_user.open_tickets() %}
                                 <span id="tickets_count" class="badge badge-primary">
                                         {{ open_tickets }} open
-                                    </span></a></li>
-                        <li class="nav-item {% if request.url_rule.endpoint == 'ticket_bp.tickets_all' %} active {% endif %}">
-                            <a class="nav-link" href="{{ url_for('ticket_bp.tickets_all') }}">{{ _('Tickets') }}</a>
+                                    </span></a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item"
+                                   href="{{ url_for('ticket_bp.my_tickets') }}">{{ _('My tasks') }}</a>
+                                <a class="dropdown-item"
+                                   href="{{ url_for('ticket_bp.requested_tickets') }}">{{ _('Requested tickets') }}</a>
+                                <a class="dropdown-item"
+                                   href="{{ url_for('ticket_bp.tickets_all') }}">{{ _('All tickets') }}</a>
+                            </div>
                         </li>
                         <li class="nav-item {% if request.url_rule.endpoint == 'reclamation_bp.new_reclamation' %} active {% endif %}">
                             <a class="nav-link"
@@ -84,9 +91,9 @@
                         </li>
                     {% else %}
                         {% if current_user.is_administrator() %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('admin.index') }}">{{ _('Admin') }}</a>
-                        </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin.index') }}">{{ _('Admin') }}</a>
+                            </li>
                         {% endif %}
 
                         <li class="nav-item"><a class="nav-link"
@@ -117,11 +124,12 @@
     {{ moment.lang(g.locale) }}
     <script>
         function set_message_count(n) {
-            $('#message_count').text(n+' new');
+            $('#message_count').text(n + ' new');
             $('#message_count').css('visibility', n ? 'visible' : 'hidden');
         }
+
         function set_ticket_count(n) {
-            $('#tickets_count').text(n+' open');
+            $('#tickets_count').text(n + ' open');
         }
 
         {% if current_user.is_authenticated %}

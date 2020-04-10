@@ -1,0 +1,16 @@
+body {
+    background: #f5f5f0 !important;
+}
+
+.dropdown-menu {
+    background-color: #474e54 !important;
+}
+
+.dropdown-item {
+    color: #c4c7ca !important;
+}
+
+.dropdown-item:hover {
+    background: #474e54 !important;
+    color: white !important;
+}

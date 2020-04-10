@@ -147,3 +147,17 @@ def my_tickets_data():
     tickets = Ticket.query.filter_by(assigned_employee_id=current_user.id).all()
     output = ticket_schema.dump(tickets)
     return jsonify({"tickets": output})
+
+
+@bp.route('/requested_tickets')
+@login_required
+def requested_tickets():
+    return render_template('ticket/requested_tickets.html')
+
+
+@bp.route('/requested_tickets_get_data')
+@login_required
+def requested_tickets_data():
+    tickets = Ticket.query.filter_by(requester_id=current_user.id).all()
+    output = ticket_schema.dump(tickets)
+    return jsonify({"tickets": output})

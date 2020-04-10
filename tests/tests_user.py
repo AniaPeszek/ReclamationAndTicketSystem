@@ -1,12 +1,13 @@
 import json
 import unittest
 
+from flask import url_for, request
 from flask_login import current_user
 
 from app import create_app, db
 from app.models import Role, User
 from config import TestingConfig
-from .tests import BaseTestCase
+from tests.tests_basic import BaseTestCase
 
 
 class UserModelTestCase(BaseTestCase):
@@ -58,14 +59,7 @@ class UserAuthTestCase(unittest.TestCase):
         self.app_context.pop()
 
     def test_successful_login(self):
-        user = User(first_name='John', last_name='Smith', username='johnsmith')
-        user.set_password('secret')
-        db.session.add(user)
-        db.session.commit()
-        payload = json.dumps({
-            "username": "johnsmith",
-            "password": "secret"
-        })
+        payload = example_user_data(first_name='John')
         with self.client as client:
             response = client.post('/auth/login', headers={"content-type": "application/json"},
                                    data=payload,
@@ -94,14 +88,7 @@ class UserAuthTestCase(unittest.TestCase):
             self.assertEqual(200, response.status_code)
 
     def test_logged_user_can_logout(self):
-        user = User(first_name='John', last_name='Smith', username='johnsmith')
-        user.set_password('secret')
-        db.session.add(user)
-        db.session.commit()
-        payload = json.dumps({
-            "username": "johnsmith",
-            "password": "secret"
-        })
+        payload = example_user_data()
         with self.client as client:
             response = client.post('/auth/login', headers={"content-type": "application/json"},
                                    data=payload,
@@ -113,6 +100,50 @@ class UserAuthTestCase(unittest.TestCase):
             client.get('/auth/logout', follow_redirects=True)
             self.assertFalse(current_user.is_authenticated)
             self.assertTrue(current_user.is_anonymous)
+
+    def test_anonymous_can_not_see_tickets_get_data(self):
+        with self.client as client:
+            client.get('/tickets_get_data', follow_redirects=True)
+            self.assertEqual(request.path, url_for('auth.login'))
+
+    def test_anonymous_can_not_see_reclamation_get_data(self):
+        with self.client as client:
+            client.get('/reclamation_get_data', follow_redirects=True)
+            self.assertEqual(request.path, url_for('auth.login'))
+
+    def test_user_can_not_see_admin_view(self):
+        payload = example_user_data()
+        with self.client as client:
+            client.post('/auth/login', headers={"content-type": "application/json"},
+                        data=payload,
+                        follow_redirects=True)
+            response = client.get('/admin/')
+            self.assertEqual(403, response.status_code)
+
+    def test_admin_can_see_admin_view(self):
+        payload = example_user_data()
+        admin = User.query.first()
+        admin_role = Role.query.filter_by(name='admin').first()
+        admin.role = admin_role
+        with self.client as client:
+            client.post('/auth/login', headers={"content-type": "application/json"},
+                        data=payload,
+                        follow_redirects=True)
+            response = client.get('/admin/')
+            self.assertEqual(200, response.status_code)
+            self.assertEqual(request.path, url_for('admin.index'))
+
+
+def example_user_data(first_name='John', last_name='Smith', username='johnsmith'):
+    user = User(first_name=first_name, last_name=last_name, username=username)
+    user.set_password('secret')
+    db.session.add(user)
+    db.session.commit()
+    payload = json.dumps({
+        "username": username,
+        "password": "secret"
+    })
+    return payload
 
 
 if __name__ == '__main__':
