@@ -29,8 +29,6 @@ class User(UserMixin, db.Model):
     position = db.Column(db.String(64))
     team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
 
-    auth_level = db.Column(db.Integer)
-    login_attempts = db.Column(db.Integer)
     supervisor = db.relationship(
         'User', secondary=supervisor_table,
         primaryjoin=(supervisor_table.c.supervisor_id == id),
@@ -56,7 +54,6 @@ class User(UserMixin, db.Model):
                                         foreign_keys='Message.recipient_id',
                                         backref='recipient', lazy='dynamic')
     last_message_read_time = db.Column(db.DateTime)
-    last_ticket_read_time = db.Column(db.DateTime)
 
     notifications = db.relationship('Notification', backref='user',
                                     lazy='dynamic')
@@ -65,17 +62,12 @@ class User(UserMixin, db.Model):
         self.notifications.filter_by(name=name).delete()
         n = Notification(name=name, payload_json=json.dumps(data), user=self)
         db.session.add(n)
-        # db.session.commit()
         return n
 
     def new_messages(self):
         last_read_time = self.last_message_read_time or datetime(1900, 1, 1)
         return Message.query.filter_by(recipient=self).filter(
             Message.timestamp > last_read_time).count()
-
-    def new_tickets(self):
-        last_read_time = self.last_ticket_read_time or datetime(1900, 1, 1)
-        return Ticket.query.filter_by(ticket_assigned=self).filter(Ticket.creation_date > last_read_time).count()
 
     def open_tickets(self):
         return Ticket.query.filter_by(ticket_assigned=self).filter_by(status=0).count()
@@ -125,20 +117,6 @@ class User(UserMixin, db.Model):
 
     def is_administrator(self):
         return self.can(Permission.ADMIN)
-
-    @staticmethod
-    def insert_first_users():
-        admin = User(username='admin')
-        user = User(username='user')
-        admin.set_password('admin')
-        user.set_password('user')
-        role_admin = Role.query.filter_by(name='admin').first()
-        admin.role = role_admin
-        role_user = Role.query.filter_by(name='user').first()
-        user.role = role_user
-        db.session.add(admin)
-        db.session.add(user)
-        db.session.commit()
 
 
 class Reclamation(db.Model):
@@ -227,7 +205,7 @@ class PartDetails(db.Model):
 class PartNo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     model = db.Column(db.String(120), unique=True)
-    manufacturer = db.Column(db.String(120), unique=True)
+    manufacturer = db.Column(db.String(120))
     person_in_charge = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     part_no_list = db.relationship('PartDetails', backref='part_no', lazy='dynamic')

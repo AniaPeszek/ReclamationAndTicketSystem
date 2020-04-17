@@ -1,8 +1,8 @@
-"""first migration
+"""init
 
-Revision ID: 97c038fd7242
+Revision ID: b9ecb71f6f29
 Revises: 
-Create Date: 2020-03-25 17:42:26.492073
+Create Date: 2020-04-16 14:13:28.200319
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '97c038fd7242'
+revision = 'b9ecb71f6f29'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -54,8 +54,6 @@ def upgrade():
     sa.Column('password', sa.String(length=128), nullable=True),
     sa.Column('position', sa.String(length=64), nullable=True),
     sa.Column('team_id', sa.Integer(), nullable=True),
-    sa.Column('auth_level', sa.Integer(), nullable=True),
-    sa.Column('login_attempts', sa.Integer(), nullable=True),
     sa.Column('role_id', sa.Integer(), nullable=True),
     sa.Column('last_message_read_time', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['role_id'], ['role.id'], ),
@@ -94,7 +92,6 @@ def upgrade():
     sa.Column('person_in_charge', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['person_in_charge'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('manufacturer'),
     sa.UniqueConstraint('model')
     )
     op.create_table('supervisor_table',

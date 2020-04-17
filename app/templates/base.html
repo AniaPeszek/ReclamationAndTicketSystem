@@ -10,7 +10,7 @@
 
         {% block styles %}
             {{ bootstrap.load_css() }}
-            <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='/css/base_style.css') }}"/>
+            <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base_style.css') }}"/>
         {% endblock %}
         <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 
@@ -31,7 +31,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand mb-0 h1" href="{{ url_for('main.index') }}">
-                <img src="{{ url_for('static', filename='/images/logo.png') }}" width="30" height="30"
+                <img src="{{ url_for('static', filename='images/logo.png') }}" width="30" height="30"
                      class="d-inline-block align-top" alt="logo"> ERP</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
                     aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,8 +73,8 @@
                             <a class="nav-link"
                                href="{{ url_for('reclamation_bp.reclamations_all') }}">{{ _('Reclamations') }}</a>
                         </li>
-                        <li class="nav-item {% if request.url_rule.endpoint == 'users.messages' %} active {% endif %}">
-                            <a class="nav-link" href="{{ url_for('users.messages') }}">{{ _('Notifications') }}
+                        <li class="nav-item {% if request.url_rule.endpoint == 'users.notifications' %} active {% endif %}">
+                            <a class="nav-link" href="{{ url_for('users.notifications') }}">{{ _('Notifications') }}
                                 {% set new_messages = current_user.new_messages() %}
                                 <span id="message_count" class="badge badge-primary"
                                       style="visibility: {% if new_messages %}visible
@@ -136,7 +136,7 @@
             $(function () {
                 var since = 0;
                 setInterval(function () {
-                    $.ajax('{{ url_for('users.notifications') }}?since=' + since).done(
+                    $.ajax('{{ url_for('users.get_notifications') }}?since=' + since).done(
                         function (notifications) {
                             for (var i = 0; i < notifications.length; i++) {
                                 if (notifications[i].name == 'unread_message_count')
