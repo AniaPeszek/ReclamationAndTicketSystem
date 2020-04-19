@@ -10,24 +10,10 @@ $(document).ready(function () {
         dataSrc: "payload",
         contentType: "application/json",
 
-
         success: function (response) {
             r_full_data = response.payload;
             r_data = r_full_data['data'];
             r_labels = r_full_data['labels'];
-            // var updatedData = {
-            //     labels: r_full_data.labels,
-            //     datasets: [
-            //         {
-            //             label: "Population (millions)",
-            //             backgroundColor: ["#3e95cd", "#8e5ea2", "#3cba9f", "#e8c3b9", "#c45850"],
-            //             data: full_data.data
-            //         }
-            //     ]
-            // };
-            // reclChart.data = updatedData;
-            // reclChart.update();
-
             var reclChart = new Chart(document.getElementById("reclamationChart"), {
                 type: 'bar',
                 data: {
@@ -48,8 +34,42 @@ $(document).ready(function () {
                     }
                 }
             });
+
+            $(".form-control-sm").change(function () {
+                var e = document.getElementById("dd");
+                var selected = e.options[e.selectedIndex].value;
+                var updatedUrl = "/get_reclamations_chart_data/" + selected;
+                var updatedTitile = 'Number of '+selected +' reclamations in the last 6 months ';
+                var getUpdatedData = $.ajax({
+                    url: updatedUrl,
+                    dataType: "json",
+                    type: "GET",
+                    data: {vals: ''},
+                    dataSrc: "payload",
+                    contentType: "application/json",
+
+                    success: function (response) {
+                        r_full_data = response.payload;
+                        r_data = r_full_data['data'];
+                        r_labels = r_full_data['labels'];
+                        var updatedData = {
+                            labels: r_full_data.labels,
+                            datasets: [
+                                {
+                                    label: "Reclamations in month",
+                                    backgroundColor: "#0275d8",
+                                    data: r_full_data.data
+                                }
+                            ]
+                        };
+                        reclChart.data = updatedData;
+                        reclChart.options.title.text = updatedTitile;
+                        reclChart.update();
+                    },
+                })
+            });
         },
-    });
+    })
 });
 
 

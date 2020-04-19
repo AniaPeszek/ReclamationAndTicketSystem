@@ -8,8 +8,9 @@ from flask import jsonify
 from app import get_locale, db
 from app.main import bp
 
-from app.models import Message, Ticket, Reclamation
+from app.models import Message, Ticket, Reclamation, PartNo, PartDetails
 from datetime import datetime, timedelta
+from sqlalchemy import func
 
 
 @bp.before_app_request
@@ -19,13 +20,17 @@ def before_request():
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
+@login_required
 def index():
     if current_user.is_authenticated:
         messages = current_user.messages_received.order_by(
             Message.timestamp.desc()).limit(5)
         current_user.add_notification('open_tickets_count', current_user.open_tickets())
+        part_models_for_chart = db.session.query(PartNo.model).all()
+        part_models_list_for_chart = [part[0] for part in part_models_for_chart]
 
-        return render_template('main/index.html', title=_('Homepage'), messages=messages)
+        return render_template('main/index.html', title=_('Homepage'), messages=messages,
+                               model_list=part_models_list_for_chart)
     return render_template('main/index.html', title=_('Homepage'))
 
 
@@ -54,24 +59,60 @@ def get_tickets_chart_data():
 
 
 @bp.route('/get_reclamations_chart_data')
+@bp.route('/get_reclamations_chart_data/<model>')
 @login_required
-def get_reclamations_chart_data():
+def get_reclamations_chart_data(model='All Models'):
     labels = []
     data = []
     number_of_months = 6
-
     start = datetime.today()
     end = datetime(start.year, start.month, 1)
 
-    for i in range(number_of_months):
-        labels.append(start.strftime("%B"))
-        recl_in_month = db.session.query(Reclamation). \
-            filter(Reclamation.informed_date <= start). \
-            filter(Reclamation.informed_date >= end).count()
-        data.append(recl_in_month)
-        start = end - timedelta(seconds=1)
-        end = end - timedelta(days=start.day)
+    if model == 'All Models':
+        for i in range(number_of_months):
+            labels.append(start.strftime("%B"))
+            recl_in_month = db.session.query(Reclamation). \
+                filter(Reclamation.informed_date <= start). \
+                filter(Reclamation.informed_date >= end).count()
+            data.append(recl_in_month)
+            start = end - timedelta(seconds=1)
+            end = end - timedelta(days=start.day)
+    else:
+        part_no = db.session.query(PartNo).filter_by(model=model).first()
+        reclamation_part_join = db.session.query(PartDetails).filter(PartDetails.part_no_id == part_no.id).join(
+            Reclamation)
+        for i in range(number_of_months):
+            labels.append(start.strftime("%B"))
+            recl_in_month = reclamation_part_join. \
+                filter(Reclamation.informed_date <= start). \
+                filter(Reclamation.informed_date >= end).count()
+            data.append(recl_in_month)
+            start = end - timedelta(seconds=1)
+            end = end - timedelta(days=start.day)
     labels = labels[::-1]
     data = data[::-1]
+
+    return jsonify({'payload': {'data': data, 'labels': labels}})
+
+
+@bp.route('/get_pie_chart_data')
+@login_required
+def get_pie_chart_data():
+    labels = []
+    data = []
+    today = datetime.today()
+    end = datetime(today.year, today.month, 1)
+    start = end - timedelta(seconds=1)
+    end = end - timedelta(days=start.day)
+
+    last_month_reclamations = db.session.query(Reclamation).filter(Reclamation.informed_date <= start). \
+        filter(Reclamation.informed_date >= end).subquery()
+    models = db.session.query(PartNo.model, func.count(PartNo.model)). \
+        join(PartDetails).join(last_month_reclamations, PartDetails.reclamation_p_sn). \
+        group_by(PartNo.model).all()
+
+    for result in models:
+        labels.append(result[0])
+        data.append(result[1])
 
     return jsonify({'payload': {'data': data, 'labels': labels}})
