@@ -60,7 +60,7 @@ def ticket(ticket_number):
                                   obj=ticket,
                                   assigned_employee=ticket.ticket_assigned,
                                   reclamation=ticket.reclamation)
-
+#to do: add team_leader and fix form problem
         if current_user.id == ticket.ticket_requester.id or current_user.id == ticket.ticket_assigned.id:
 
             if open_form.validate_on_submit():

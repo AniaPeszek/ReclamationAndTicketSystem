@@ -7,20 +7,14 @@ import string
 from datetime import datetime, timedelta
 
 
-def create_admin_and_chef():
+def create_admin():
     admin = User(username='admin', first_name='John', last_name='Price', email='admin@test.com',
                  position='administrator')
     admin.set_password('admin')
-    chef = User(username='chef', first_name='John', last_name='Smith', email='chef@test.com',
-                position='chef')
-    chef.set_password('chef')
     role_admin = Role.query.filter_by(name='admin').first()
     admin.role = role_admin
-    chef.role = role_admin
     db.session.add(admin)
-    db.session.add(chef)
     admin.team = Team.query.get(4)
-    chef.team = Team.query.get(4)
     db.session.commit()
 
 
@@ -87,7 +81,7 @@ def create_part_no():
               'Rear derailleur XTR-11', 'Rear derailleur RD-M970']
     persons_in_charge = []
     for i in range(10):
-        user = User.query.get(random.randint(3, 32))
+        user = User.query.get(random.randint(3, 31))
         persons_in_charge.append(user)
 
     for i in range(len(models)):
@@ -111,19 +105,27 @@ def get_random_alpha_numeric_string(string_length=10):
     return ''.join((random.choice(letters_and_digits) for i in range(string_length)))
 
 
-def create_reclamation(model, description_reclamation, tickets_descriptions):
+def create_reclamation(is_open, model, description_reclamation, tickets_descriptions):
     service_assistants = User.query.filter_by(position='customer service assistant').all()
     customers = Customer.query.all()
 
     for i in range(len(service_assistants)):
         random_customer_id = random.randint(0, len(customers) - 1)
         part = create_part_details(model)
-        date = get_random_date()
+        if is_open:
+            today = datetime.now()
+            start_date = today - timedelta(days=30)
+            date = get_random_date(min_year=start_date.year, min_month=start_date.month, min_day=start_date.day,
+                                   max_year=today.year, max_month=today.month, max_day=today.day)
+            finished_date = None
+        else:
+            date = get_random_date()
+            finished_date = date + timedelta(days=random.randint(5, 29))
         recl = Reclamation(reclamation_requester=service_assistants[i],
                            reclamation_customer=customers[random_customer_id],
                            informed_date=date,
                            due_date=date + timedelta(days=30),
-                           finished_date=date + timedelta(days=random.randint(5, 29)),
+                           finished_date=finished_date,
                            reclamation_part_sn_id=part,
                            description_reclamation=description_reclamation)
         db.session.add(recl)
@@ -131,13 +133,13 @@ def create_reclamation(model, description_reclamation, tickets_descriptions):
         delay = 0
         for ticket in tickets_descriptions:
             if ticket == 'contact with customer':
-                create_ticket(ticket, recl, delay=18, customer_service=True)
+                create_ticket(ticket, recl, delay=18, customer_service=True, is_open=is_open)
             else:
                 delay += 3
-                create_ticket(ticket, recl, delay=delay)
+                create_ticket(ticket, recl, delay=delay, is_open=is_open)
 
 
-def create_reclamations():
+def create_reclamations(is_open=False):
     reclamation_data = [{'model': 'Wheel-XL13-29',
                          'description_reclamation': 'buckled bike wheel',
                          'tickets_descriptions': ['remove the tyre and straight the wheel', 'put on the tire',
@@ -155,26 +157,32 @@ def create_reclamations():
                          'tickets_descriptions': ['check part and repair', 'adjust a rear derailleur',
                                                   'contact with customer']}
                         ]
-    for data in reclamation_data:
-        create_reclamation(**data)
+    for i in range(len(reclamation_data)):
+        data = random.choice(reclamation_data)
+        create_reclamation(is_open, **data)
 
 
-def get_random_date(min_year=2019, min_month=10, max_year=datetime.now().year, max_month=datetime.now().month):
-    start = datetime(min_year, min_month, 1, 00, 00, 00)
-    end = datetime(max_year, max_month, 1, 00, 00, 00)
+def get_random_date(min_year=2019, min_month=10, min_day=1,
+                    max_year=datetime.now().year, max_month=datetime.now().month, max_day=1):
+    start = datetime(min_year, min_month, min_day, 00, 00, 00)
+    end = datetime(max_year, max_month, max_day, 00, 00, 00)
     return start + (end - start) * random.random()
 
 
-def create_ticket(description, reclamation, delay, customer_service=False):
+def create_ticket(description, reclamation, delay, customer_service=False, is_open=False):
     if customer_service:
-        assigned = User.query.get(random.randint(23, 32))
+        assigned = User.query.get(random.randint(22, 31))
     else:
-        assigned = User.query.get(random.randint(3, 22))
+        assigned = User.query.get(random.randint(3, 21))
     requester = assigned.team.team_leader
+    if is_open:
+        finished_date = None
+    else:
+        finished_date = reclamation.informed_date + timedelta(days=delay + random.randint(0, 2))
     ticket = Ticket(ticket_requester=requester, ticket_assigned=assigned, description_ticket=description,
                     reclamation=reclamation,
                     due_date=reclamation.informed_date + timedelta(days=20),
-                    finished_date=reclamation.informed_date + timedelta(days=delay + random.randint(0, 2)))
+                    finished_date=finished_date)
     db.session.add(ticket)
     ticket.creation_date = reclamation.informed_date
     db.session.commit()
@@ -201,7 +209,7 @@ def upload_example_data():
     print('Roles created')
     create_teams()
     print('Teams created')
-    create_admin_and_chef()
+    create_admin()
     create_users()
     print('Users created')
     set_team_leaders()
@@ -215,6 +223,10 @@ def upload_example_data():
     create_reclamations()
     print('2 part of Reclamations created')
     create_reclamations()
+    print('3 part of Reclamations created')
+    create_reclamations()
+    print('4 part of Reclamations created')
+    create_reclamations(is_open=True)
     print('Reclamations created')
 
 

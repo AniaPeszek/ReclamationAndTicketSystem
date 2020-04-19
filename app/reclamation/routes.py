@@ -60,6 +60,7 @@ def reclamation(reclamation_number):
     close_form = CloseReclamationForm()
     open_form = ReopenReclamationForm()
 
+#to do: add team_leader and person_in_charge
     if current_user.id == rec.reclamation_requester.id:
 
         if rec.status == 0:
