@@ -4,25 +4,26 @@
 
 
 {% block app_content %}
-    <div class="row">
-        <div class="col-md-3">
+
+    <div class="row" style="margin-left: 10% ">
+        <div class="col-lg-3">
             <h1>{{ _('Reclamation') }}</h1>
             <h3>Requester: {{ requester }}</h3>
             <h3>Status: {{ status }}</h3>
 
-        {% if close_form %}
-            {% if rec.status == 0 %}
-                {{ render_form(close_form, form_type='horizontal', horizontal_columns=('lg', 0, 1)) }}
-            {% elif rec.status == 1%}
-                {{ render_form(open_form, form_type='horizontal', horizontal_columns=('lg', 0, 1)) }}
+            {% if close_form %}
+                {% if rec.status == 0 %}
+                    {{ render_form(close_form, form_type='horizontal', horizontal_columns=('lg', 0, 1)) }}
+                {% elif rec.status == 1 %}
+                    {{ render_form(open_form, form_type='horizontal', horizontal_columns=('lg', 0, 1)) }}
+                {% endif %}
             {% endif %}
-        {% endif %}
         </div>
     </div>
 
 
-    <div class="row">
-        <div class="col-md-5">
+    <div class="row justify-content-center">
+        <div class="col-2">
             <form method="POST">
                 {{ form.csrf_token() }}
                 {{ render_field(form.customer, horizontal_columns=('lg', 3, 9)) }}
@@ -39,7 +40,8 @@
             </form>
 
         </div>
-        <div class="col-md-6">
+
+        <div class="col-4">
             <p><b>Tickets linked </b>
                 <a class="btn btn-primary btn-sm" role="button"
                    href="{{ url_for('ticket_bp.new_ticket', rec_id=rec.id) }}">
@@ -71,15 +73,27 @@
                 {% else %}
                     <td>Closed</td>
                 {% endif %}
-
-
                 </tr>
-
                 {% endfor %}
-
                 </tbody>
             </table>
         </div>
+
+        <div class="col-3">
+            <p><b>Notes</b></p>
+            {% for note in notes %}
+                {% include 'reclamation/_note.html' %}
+                <br>
+            {% endfor %}
+
+
+            <form method="POST">
+                {{ form.csrf_token() }}
+                {{ render_field(note_form.content, horizontal_columns=('lg', 3, 9)) }}
+                {{ render_field(note_form.submit2) }}
+            </form>
+        </div>
+
     </div>
 {% endblock %}
 

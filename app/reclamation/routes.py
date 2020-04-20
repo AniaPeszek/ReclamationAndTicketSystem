@@ -4,11 +4,11 @@ from flask_login import current_user, login_required
 from datetime import datetime
 
 from app import db
-from app.models import PartDetails, Reclamation, PartNo
+from app.models import PartDetails, Reclamation, PartNo, Note
 from app.models_serialized import reclamation_schema
 from app.reclamation import bp
 from app.reclamation.forms import ReclamationForm, EditReclamationForm, ReadOnlyReclamationForm, CloseReclamationForm, \
-    ReopenReclamationForm
+    ReopenReclamationForm, NoteForm
 from app.users.notification import send_message
 
 
@@ -59,6 +59,8 @@ def reclamation(reclamation_number):
     tickets = rec.tickets.all()
     close_form = CloseReclamationForm()
     open_form = ReopenReclamationForm()
+    note_form = NoteForm()
+    notes = Note.query.filter_by(rec_id=reclamation_number).all()
 
     part_details = db.session.query(PartDetails).filter_by(id=rec.reclamation_part_sn_id.id).first()
     person_in_charge = part_details.part_no.person_in_charge
@@ -148,12 +150,22 @@ def reclamation(reclamation_number):
         flash('Reclamation has been edited')
         return redirect(url_for('reclamation_bp.reclamation', reclamation_number=rec.id))
 
+    if note_form.submit2.data and note_form.validate():
+        new_note = Note(note_drafter=current_user,
+                        rec=rec,
+                        content=note_form.content.data)
+        db.session.add(new_note)
+        db.session.commit()
+        flash("The note has been added")
+        return redirect(url_for('reclamation_bp.reclamation', reclamation_number=rec.id))
+
     if current_user in users_who_can_edit:
         return render_template('reclamation/reclamation.html', form=form, requester=requester, status=status, rec=rec,
-                           tickets=tickets, close_form=close_form, open_form=open_form, can_edit=True)
+                               tickets=tickets, close_form=close_form, open_form=open_form, can_edit=True, notes=notes,
+                               note_form=note_form)
     else:
         return render_template('reclamation/reclamation.html', form=form, requester=requester, status=status, rec=rec,
-                               tickets=tickets, can_edit=False)
+                               tickets=tickets, can_edit=False, notes=notes, note_form=note_form)
 
 
 @bp.route('/all')

@@ -1,0 +1,5 @@
+<div class="border border-dark" style="padding: 10px">
+<b>{{ note.note_drafter.first_name }} {{ note.note_drafter.last_name }}</b>
+    {{ moment(note.creation_date).format("LLL") }} <hr style="margin: 0.25em">
+{{ note.content }}
+</div>

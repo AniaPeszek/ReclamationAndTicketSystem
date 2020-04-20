@@ -71,3 +71,8 @@ class CloseReclamationForm(FlaskForm):
 
 class ReopenReclamationForm(FlaskForm):
     submit1 = SubmitField('Re-open reclamation')
+
+
+class NoteForm(FlaskForm):
+    content = TextAreaField("Note")
+    submit2 = SubmitField("Create a note")

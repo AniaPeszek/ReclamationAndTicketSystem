@@ -131,10 +131,10 @@ class Reclamation(db.Model):
     status = db.Column(db.Integer, nullable=False)
 
     tickets = db.relationship('Ticket', backref='reclamation', lazy='dynamic')
+    note_rec = db.relationship('Note', backref='rec', lazy='dynamic')
 
     def __init__(self, reclamation_requester, reclamation_customer, informed_date, reclamation_part_sn_id,
                  description_reclamation, due_date=None, finished_date=None):
-
         self.informed_date = informed_date
         self.due_date = due_date if due_date else informed_date + timedelta(days=30)
         self.finished_date = finished_date
@@ -156,8 +156,6 @@ class Ticket(db.Model):
     status = db.Column(db.Integer, nullable=False)
     reclamation_id = db.Column(db.Integer, db.ForeignKey('reclamation.id'), nullable=False)
 
-    note_tic = db.relationship('Note', backref='ticket', lazy='dynamic')
-
     def __init__(self, ticket_requester, ticket_assigned, description_ticket, reclamation,
                  due_date=None, finished_date=None):
         self.ticket_requester = ticket_requester
@@ -174,7 +172,7 @@ class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     drafter = db.Column(db.Integer, db.ForeignKey('user.id'))
     creation_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    ticket_id = db.Column(db.Integer, db.ForeignKey('ticket.id'))
+    rec_id = db.Column(db.Integer, db.ForeignKey('reclamation.id'))
     content = db.Column(db.String(512))
 
 
