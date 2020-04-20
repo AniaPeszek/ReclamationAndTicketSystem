@@ -10,12 +10,13 @@
             <h3>Requester: {{ requester }}</h3>
             <h3>Status: {{ status }}</h3>
 
-            {% if rec.status == 0 and  current_user.id == rec.reclamation_requester.id %}
+        {% if close_form %}
+            {% if rec.status == 0 %}
                 {{ render_form(close_form, form_type='horizontal', horizontal_columns=('lg', 0, 1)) }}
-            {% elif rec.status == 1 and current_user.id == rec.reclamation_requester.id: %}
+            {% elif rec.status == 1%}
                 {{ render_form(open_form, form_type='horizontal', horizontal_columns=('lg', 0, 1)) }}
             {% endif %}
-
+        {% endif %}
         </div>
     </div>
 
@@ -32,10 +33,11 @@
                 {{ render_field(form.part_prod_date, horizontal_columns=('lg', 3, 9)) }}
                 {{ render_field(form.description, horizontal_columns=('lg', 3, 9)) }}
                 {{ render_field(form.finished_date, horizontal_columns=('lg', 3, 9)) }}
-                {% if current_user.id == rec.reclamation_requester.id %}
+                {% if can_edit %}
                     {{ render_field(form.submit) }}
                 {% endif %}
             </form>
+
         </div>
         <div class="col-md-6">
             <p><b>Tickets linked </b>

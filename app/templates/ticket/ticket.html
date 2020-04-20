@@ -11,11 +11,13 @@
             <h3>Requester: {{ requester }}</h3>
             <h3>Status: {{ status }}</h3>
             <h3>Creation Date: {{ ticket.creation_date.strftime("%Y-%m-%d, %H:%M") }}</h3>
-            {% if ticket.status == 0 and (current_user.id == ticket.ticket_requester.id or current_user.id == ticket.ticket_assigned.id) %}
+        {% if close_form %}
+            {% if ticket.status == 0 %}
                 {{ render_form(close_form, form_type='horizontal', horizontal_columns=('lg', 0, 1)) }}
-            {% elif ticket.status == 1 and (current_user.id == ticket.ticket_requester.id or current_user.id == ticket.ticket_assigned.id) %}
+            {% elif ticket.status == 1 %}
                 {{ render_form(open_form, form_type='horizontal', horizontal_columns=('lg', 0, 1)) }}
             {% endif %}
+        {% endif %}
             <a class="btn btn-primary" role="button"
                href="{{ url_for('reclamation_bp.reclamation',reclamation_number=reclamation_number) }}">Go to the
                 reclamation</a>

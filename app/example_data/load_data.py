@@ -224,10 +224,8 @@ def upload_example_data():
     print('2 part of Reclamations created')
     create_reclamations()
     print('3 part of Reclamations created')
-    create_reclamations()
-    print('4 part of Reclamations created')
     create_reclamations(is_open=True)
-    print('Reclamations created')
+    print('All Reclamations created')
 
 
 def clear_data(session):

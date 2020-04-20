@@ -66,8 +66,8 @@ class ReadOnlyReclamationForm(EditReclamationForm):
 
 
 class CloseReclamationForm(FlaskForm):
-    submit = SubmitField('Close reclamation')
+    submit1 = SubmitField('Close reclamation')
 
 
 class ReopenReclamationForm(FlaskForm):
-    submit = SubmitField('Re-open reclamation')
+    submit1 = SubmitField('Re-open reclamation')

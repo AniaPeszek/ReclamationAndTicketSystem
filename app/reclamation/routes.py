@@ -4,7 +4,7 @@ from flask_login import current_user, login_required
 from datetime import datetime
 
 from app import db
-from app.models import PartDetails, Reclamation
+from app.models import PartDetails, Reclamation, PartNo
 from app.models_serialized import reclamation_schema
 from app.reclamation import bp
 from app.reclamation.forms import ReclamationForm, EditReclamationForm, ReadOnlyReclamationForm, CloseReclamationForm, \
@@ -60,8 +60,11 @@ def reclamation(reclamation_number):
     close_form = CloseReclamationForm()
     open_form = ReopenReclamationForm()
 
-#to do: add team_leader and person_in_charge
-    if current_user.id == rec.reclamation_requester.id:
+    part_details = db.session.query(PartDetails).filter_by(id=rec.reclamation_part_sn_id.id).first()
+    person_in_charge = part_details.part_no.person_in_charge
+    users_who_can_edit = [rec.reclamation_requester, rec.reclamation_requester.team.team_leader, person_in_charge]
+
+    if current_user in users_who_can_edit:
 
         if rec.status == 0:
             status = _("Open")
@@ -75,7 +78,7 @@ def reclamation(reclamation_number):
                                        part_prod_date=rec.reclamation_part_sn_id.production_date,
                                        description=rec.description_reclamation,
                                        finished_date=rec.finished_date, )
-            if close_form.validate_on_submit():
+            if close_form.submit1.data and close_form.validate():
                 rec.finished_date = datetime.utcnow()
                 rec.status = 1
                 db.session.add(rec)
@@ -94,7 +97,7 @@ def reclamation(reclamation_number):
                                            part_prod_date=rec.reclamation_part_sn_id.production_date,
                                            description=rec.description_reclamation,
                                            finished_date=rec.finished_date)
-            if open_form.validate_on_submit():
+            if open_form.submit1.data and open_form.validate():
                 rec.finished_date = None
                 rec.status = 0
                 db.session.add(rec)
@@ -119,7 +122,7 @@ def reclamation(reclamation_number):
         else:
             status = _("Closed")
 
-    if form.validate_on_submit():
+    if form.submit.data and form.validate():
 
         # checks if parts exists in database
         partDetails_in_database = PartDetails.query.filter_by(part_sn=form.part_sn.data).first()
@@ -140,18 +143,17 @@ def reclamation(reclamation_number):
             rec.status = 0
         else:
             rec.status = 1
-        try:
-            if rec.finished_date < rec.informed_date:
-                flash('Finished date can not be earlier than Informed Date')
-                return redirect(url_for('reclamation_bp.reclamation', reclamation_number=rec.id))
-        finally:
-            db.session.add(rec)
-            db.session.commit()
-            flash('Reclamation has been edited')
-            return redirect(url_for('reclamation_bp.reclamation', reclamation_number=rec.id))
+        db.session.add(rec)
+        db.session.commit()
+        flash('Reclamation has been edited')
+        return redirect(url_for('reclamation_bp.reclamation', reclamation_number=rec.id))
 
-    return render_template('reclamation/reclamation.html', form=form, requester=requester, status=status, rec=rec,
-                           tickets=tickets, close_form=close_form, open_form=open_form)
+    if current_user in users_who_can_edit:
+        return render_template('reclamation/reclamation.html', form=form, requester=requester, status=status, rec=rec,
+                           tickets=tickets, close_form=close_form, open_form=open_form, can_edit=True)
+    else:
+        return render_template('reclamation/reclamation.html', form=form, requester=requester, status=status, rec=rec,
+                               tickets=tickets, can_edit=False)
 
 
 @bp.route('/all')

@@ -45,11 +45,11 @@ class EditTicketForm(FlaskForm):
 
 
 class CloseTicketForm(FlaskForm):
-    submit = SubmitField('Close ticket')
+    submit1 = SubmitField('Close ticket')
 
 
 class ReopenTicketForm(FlaskForm):
-    submit = SubmitField('Re-open ticket')
+    submit1 = SubmitField('Re-open ticket')
 
 
 class RequesterTicketForm(EditTicketForm):

@@ -54,16 +54,15 @@ def ticket(ticket_number):
     status = _("Open") if ticket.status == 0 else _("Closed")
     close_form = CloseTicketForm()
     open_form = ReopenTicketForm()
-
+    users_who_can_edit = [ticket.ticket_assigned, ticket.ticket_requester, ticket.ticket_assigned.team.team_leader]
     if ticket.status == 1:
         form = ReadOnlyTicketForm(formdata=request.form,
                                   obj=ticket,
                                   assigned_employee=ticket.ticket_assigned,
                                   reclamation=ticket.reclamation)
-#to do: add team_leader and fix form problem
-        if current_user.id == ticket.ticket_requester.id or current_user.id == ticket.ticket_assigned.id:
 
-            if open_form.validate_on_submit():
+        if current_user in users_who_can_edit:
+            if open_form.submit1.data and open_form.validate():
                 ticket.finished_date = None
                 ticket.status = 0
                 db.session.add(ticket)
@@ -72,26 +71,29 @@ def ticket(ticket_number):
                 return redirect(url_for('ticket_bp.ticket', ticket_number=ticket.id))
 
     else:
-
-        if current_user.id == ticket.ticket_requester.id:
+        if current_user == ticket.ticket_requester \
+                or current_user == ticket.ticket_assigned.team.team_leader:
             form = RequesterTicketForm(formdata=request.form,
                                        obj=ticket,
                                        assigned_employee=ticket.ticket_assigned,
                                        reclamation=ticket.reclamation)
-
-
         elif current_user.id == ticket.ticket_assigned.id:
             form = AssignedUserTicketForm(formdata=request.form,
                                           obj=ticket,
                                           assigned_employee=ticket.ticket_assigned,
                                           reclamation=ticket.reclamation)
+        else:
+            form = ReadOnlyTicketForm(formdata=request.form,
+                                      obj=ticket,
+                                      assigned_employee=ticket.ticket_assigned,
+                                      reclamation=ticket.reclamation)
 
-    if form.validate_on_submit() or close_form.validate_on_submit():
+    if form.validate_on_submit() or (close_form.submit1.data and close_form.validate()):
         ticket.ticket_assigned = form.assigned_employee.data
         ticket.reclamation = form.reclamation.data
         ticket.due_date = form.due_date.data
         ticket.description_ticket = form.description_ticket.data
-        if close_form.validate_on_submit():
+        if close_form.submit1.data and close_form.validate():
             ticket.finished_date = datetime.utcnow()
         else:
             ticket.finished_date = form.finished_date.data
@@ -108,17 +110,21 @@ def ticket(ticket_number):
         finally:
             db.session.add(ticket)
             db.session.commit()
-            if close_form.validate_on_submit():
+            if close_form.submit1.data and close_form.validate():
                 flash('Ticket has been closed')
             else:
                 flash('Ticket has been edited')
             return redirect(url_for('ticket_bp.ticket', ticket_number=ticket.id))
 
-    if request.method == "POST":
-        return redirect(url_for('reclamation_bp.reclamation', reclamation_number=reclamation_number))
+    # if request.method == "POST":
+    #     return redirect(url_for('reclamation_bp.reclamation', reclamation_number=reclamation_number))
 
-    return render_template('ticket/ticket.html', form=form, requester=requester, status=status, ticket=ticket,
-                           reclamation_number=reclamation_number, close_form=close_form, open_form=open_form)
+    if current_user in users_who_can_edit:
+        return render_template('ticket/ticket.html', form=form, requester=requester, status=status, ticket=ticket,
+                               reclamation_number=reclamation_number, close_form=close_form, open_form=open_form)
+    else:
+        return render_template('ticket/ticket.html', form=form, requester=requester, status=status, ticket=ticket,
+                               reclamation_number=reclamation_number)
 
 
 @bp.route('/tickets_get_data', methods=['GET', 'POST'])
