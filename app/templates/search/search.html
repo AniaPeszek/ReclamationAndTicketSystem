@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <h1>Search Results</h1>
+    <h3>Serial Number: {{ serial_numbers[0].part_sn }}</h3>
+    <h3>Internal Part ID: {{ serial_numbers[0].id }}</h3>
+    <br>
+    <h3>Reclamations connected</h3>
+
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th style="width: 15%">ID</th>
+            <th style="width: 15%">Informed Date</th>
+            <th style="width: 60%">Description</th>
+            <th style="width: 10%">Status</th>
+
+            {#            <th scope="col">ID</th>#}
+            {#            <th scope="col">Informed Date</th>#}
+            {#            <th scope="col">Description</th>#}
+            {#            <th scope="col">Status</th>#}
+        </tr>
+        </thead>
+
+        {% for i in range(results_q) %}
+
+            <tbody>
+
+            {% if serial_numbers[0].reclamation_p_sn.all()[i].status == 0 %}
+                <tr class="table-danger">
+                    {% else %}
+                <tr class="table-success">
+            {% endif %}
+
+
+
+            <th scope="row">
+                <a href="{{ url_for('reclamation_bp.reclamation',reclamation_number=serial_numbers[0].reclamation_p_sn.all()[i].id) }}">
+                    Reclamation: {{ serial_numbers[0].reclamation_p_sn.all()[i].id }}</a>
+            </th>
+            <td>
+                {{ serial_numbers[0].reclamation_p_sn.all()[i].informed_date.date() }}
+            </td>
+            <td>
+                {{ serial_numbers[0].reclamation_p_sn.all()[i].description_reclamation }}
+            </td>
+            <td>
+                {% if serial_numbers[0].reclamation_p_sn.all()[i].status ==0 %}
+                    Open
+                {% else %}
+                    Closed
+                {% endif %}
+            </td>
+
+            </tr>
+            </tbody>
+        {% endfor %}
+    </table>
+
+
+
+
+
+
+
+
+{% endblock %}

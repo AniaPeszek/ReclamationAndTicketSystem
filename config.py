@@ -21,6 +21,7 @@ class Config:
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = ['mail@example.com']
 
+    ELASTICSEARCH_URL = os.environ.get('ELASTICSEARCH_URL')
 
 class TestingConfig(Config):
     TESTING = True

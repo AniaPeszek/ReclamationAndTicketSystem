@@ -1,4 +1,4 @@
-from flask import render_template, url_for, current_app, request
+from flask import render_template, url_for, current_app, request, redirect
 
 from flask import g
 from flask_babelex import _, get_locale
@@ -7,14 +7,20 @@ from flask import jsonify
 
 from app import get_locale, db
 from app.main import bp
+from app.search.forms import SearchForm
 
 from app.models import Message, Ticket, Reclamation, PartNo, PartDetails
 from datetime import datetime, timedelta
+
 from sqlalchemy import func
 
 
 @bp.before_app_request
 def before_request():
+    if current_user.is_authenticated:
+        current_user.last_seen = datetime.utcnow()
+        db.session.commit()
+        g.search_form = SearchForm()
     g.locale = str(get_locale())
 
 
@@ -116,3 +122,14 @@ def get_pie_chart_data():
         data.append(result[1])
 
     return jsonify({'payload': {'data': data, 'labels': labels}})
+
+
+@bp.route('/search')
+@login_required
+def search():
+    if not g.search_form.validate():
+        return redirect(url_for('main.index'))
+    serial_numbers, total = PartDetails.search(g.search_form.q.data, 1, 100)
+    results_q = len(serial_numbers[0].reclamation_p_sn.all())
+
+    return render_template('search/search.html', title='Search', serial_numbers=serial_numbers, results_q=results_q)
