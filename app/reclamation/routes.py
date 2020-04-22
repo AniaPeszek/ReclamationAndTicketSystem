@@ -55,7 +55,7 @@ def new_reclamation():
 @login_required
 def reclamation(reclamation_number):
     rec = Reclamation.query.get(reclamation_number)
-    requester = rec.reclamation_requester.username
+    requester = rec.reclamation_requester.first_name + " " + rec.reclamation_requester.last_name
     tickets = rec.tickets.all()
     close_form = CloseReclamationForm()
     open_form = ReopenReclamationForm()

@@ -129,6 +129,15 @@ function setupData() {
         $("#dateEnd2").change(function () {
             $oTable.draw();
         });
+
+
+        //for status checkbox
+        $('#openCheckbox').on("click", function (e) {
+            $oTable.draw();
+        });
+        $('#closedCheckbox').on("click", function (e) {
+            $oTable.draw();
+        });
     });
 }
 
@@ -233,4 +242,19 @@ $("#clear").click(function () {
     $('#dateEnd1').datepicker('setDate', null);
     $('#dateEnd2').datepicker('setDate', null);
     $oTable.draw();
+});
+
+// The plugin function for adding a new filtering routine for status
+$(document).ready(function () {
+    $.fn.dataTableExt.afnFiltering.push(function (oSettings, aData, iDataIndex) {
+        var open = $('#openCheckbox').is(':checked');
+        var closed = $('#closedCheckbox').is(':checked');
+
+        if (open && aData[4] === 'open' || closed && aData[4] === 'closed') {
+            return true;
+        }
+        if (open && closed){return true;}
+        if (!open && !closed){return false;}
+        return false;
+    });
 });

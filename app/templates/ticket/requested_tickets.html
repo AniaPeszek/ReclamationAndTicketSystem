@@ -59,8 +59,34 @@
                     </tbody>
                 </table>
             </div>
+            <div class="col-lg-3">
+                <table class="table table-sm">
+                    <thead>
+                    <tr>
+                        <th scope="col">{{ _('Status filters') }}</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><div class="form-check form-check-inline">
+                            <input class="form-check-input" checked="checked" type="checkbox" id="openCheckbox"
+                                   value="open" >
+                            <label class="form-check-label" for="inlineCheckbox1">{{ _('Open ') }}</label>
+                        </div>
+                        </td>
+                        <td>
+                            <div class="form-check form-check-inline">
+                            <input class="form-check-input" checked="checked" type="checkbox" id="closedCheckbox"
+                                   value="closed">
+                            <label class="form-check-label" for="inlineCheckbox1">{{ _('Closed ') }}</label>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-
 
         <div>
             <table class="table table-hover display" style="width:100%;" id="ticket_table">

@@ -1,0 +1,6 @@
+<div class="border border-dark" style="padding: 10px">
+<b>{{ _('Due date:') }} {{ moment(ticket.due_date).format("LLL") }}</b>
+    <hr style="margin: 0.25em">
+    {{ _('Description: ') }}{{ ticket.description_ticket }}<br>
+    <a href="{{ url_for('ticket_bp.ticket', ticket_number=ticket.id) }}">{{ _('Show details') }}</a>
+</div>

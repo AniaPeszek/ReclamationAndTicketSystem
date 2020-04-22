@@ -4,8 +4,10 @@
     <div class="container" style="margin-bottom: 20px;">
         <div class="row">
             <div class="col-lg-6">
-                <canvas id="ticketChart" width="600" height="400"></canvas>
+                <canvas id="pieChart" width="600" height="400"></canvas>
             </div>
+
+
             <div class="col-lg-6">
                 <canvas id="reclamationChart" width="600" height="400"></canvas>
                 <br>
@@ -22,19 +24,11 @@
                 </div>
             </div>
         </div>
-    </div>
+        <div class="row">
+            {{ _('If you want to perform administrative tasks: ') }}
+            <a href="{{ url_for('admin.index') }}"> &nbsp; &raquo; {{ _('go to Admin dashboard') }} &laquo;</a>
+        </div>
 
-    <div class="row" style="margin-bottom: 20px;">
-        <div class="col-lg-6">
-            <canvas id="pieChart" width="600" height="400"></canvas>
-        </div>
-        <div class="col-lg-6">
-            <h2>{{ _('Latest tickets') }}</h2>
-            {% for ticket in open_tickets %}
-                    {% include 'main/_ticket.html' %}
-                    <br>
-                {% endfor %}
-        </div>
     </div>
 
 {% endblock %}
@@ -50,7 +44,6 @@
     {{ super() }}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
     {% if current_user.is_authenticated %}
-        <script src="{{ url_for('static', filename='scripts/ticket_chart.js') }}"></script>
         <script src="{{ url_for('static', filename='scripts/reclamation_chart.js') }}"></script>
         <script src="{{ url_for('static', filename='scripts/pie_chart.js') }}"></script>
     {% endif %}

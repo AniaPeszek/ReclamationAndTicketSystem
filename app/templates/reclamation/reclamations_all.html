@@ -1,13 +1,103 @@
 {% extends 'base.html' %}
 
 {% block styles %}
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='/DataTables/datatables.min.css') }}"/>
+    <link rel="stylesheet" type="text/css"
+          href="{{ url_for('static', filename='/scripts/jquery-ui/jquery-ui.min.css') }}"/>
     {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='DataTables/datatables.min.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='/css/ticket_style.css') }}"/>
+
+{#    #}
+{#    {{ super() }}#}
+{#    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='DataTables/datatables.min.css') }}"/>#}
+
 {% endblock %}
 
 {% block app_content %}
     <div class="container">
         <h1>{{ _('Reclamations') }}</h1>
+
+        <div id="baseDateControl" class="row">
+            <div class="col-lg-6">
+                <table class="table table-sm">
+                    <thead>
+                    <tr>
+                        <th scope="col">{{ _('Date filters') }}</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <th scope="row">{{ _('Creation Date: ') }}</th>
+                        <td>
+                            {{ _('between ') }} <input type="text" name="dateStart" id="dateStart" class="datepicker"
+                                                       size="8"/>
+                            {{ _('and') }}
+                            <input type="text" name="dateEnd" id="dateEnd" class="datepicker" size="8"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">{{ _('Due Date: ') }}</th>
+                        <td>
+                            {{ _('between ') }} <input type="text" name="dateStart1" id="dateStart1" class="datepicker"
+                                                       size="8"/>
+                            {{ _('and') }}
+                            <input type="text" name="dateEnd1" id="dateEnd1" class="datepicker" size="8"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">{{ _('Finished Date: ') }}</th>
+                        <td>
+                            {{ _('between ') }} <input type="text" name="dateStart2" id="dateStart2" class="datepicker"
+                                                       size="8"/>
+                            {{ _('and') }}
+                            <input type="text" name="dateEnd2" id="dateEnd2" class="datepicker" size="8"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button type="button" id="clear">{{ _('Clear date filters ') }}</button>
+                        </td>
+                        <td></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-lg-3">
+                <table class="table table-sm">
+                    <thead>
+                    <tr>
+                        <th scope="col">{{ _('Status filters') }}</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><div class="form-check form-check-inline">
+                            <input class="form-check-input" checked="checked" type="checkbox" id="openCheckbox"
+                                   value="open">
+                            <label class="form-check-label" for="inlineCheckbox1">{{ _('Open ') }}</label>
+                        </div>
+                        </td>
+                        <td>
+                            <div class="form-check form-check-inline">
+                            <input class="form-check-input" checked="checked" type="checkbox" id="closedCheckbox"
+                                   value="closed">
+                            <label class="form-check-label" for="inlineCheckbox1">{{ _('Closed ') }}</label>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+
+
+
+
+
         <table class="table table-hover display" style="width:100%;" id="reclamation_table">
             <thead class="thead-dark">
             <tr>
@@ -21,6 +111,18 @@
                 <th scope="col">{{ _('Description') }}</th>
             </tr>
             </thead>
+            <tfoot>
+            <tr>
+                <th scope="col">{{ _('ID') }}</th>
+                <th scope="col">{{ _('Informed Date') }}</th>
+                <th scope="col">{{ _('Due Date') }}</th>
+                <th scope="col">{{ _('Finished Date') }}</th>
+                <th scope="col">{{ _('Status') }}</th>
+                <th scope="col">{{ _('Customer') }}</th>
+                <th scope="col">{{ _('Part Serial Number') }}</th>
+                <th scope="col">{{ _('Description') }}</th>
+            </tr>
+            </tfoot>
         </table>
     </div>
 {% endblock %}
@@ -28,5 +130,7 @@
 {% block scripts %}
     {{ super() }}
     <script type="text/javascript" src="{{ url_for('static', filename='DataTables/datatables.min.js') }}"></script>
+        <script type="text/javascript"
+            src="{{ url_for('static', filename='scripts/jquery-ui/jquery-ui.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='scripts/reclamations_all_script.js') }}"></script>
 {% endblock %}

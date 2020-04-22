@@ -29,13 +29,18 @@ def before_request():
 @login_required
 def index():
     if current_user.is_authenticated:
-        messages = current_user.messages_received.order_by(
-            Message.timestamp.desc()).limit(5)
+        open_tickets = db.session.query(Ticket).filter_by(assigned_employee_id=current_user.id).filter_by(status=0). \
+            order_by(Ticket.creation_date.desc()).limit(4).all()
+
         current_user.add_notification('open_tickets_count', current_user.open_tickets())
         part_models_for_chart = db.session.query(PartNo.model).all()
         part_models_list_for_chart = [part[0] for part in part_models_for_chart]
 
-        return render_template('main/index.html', title=_('Homepage'), messages=messages,
+        if current_user.is_administrator():
+            return render_template('main/index_for_admin.html', title=_('Homepage'),
+                                   model_list=part_models_list_for_chart)
+
+        return render_template('main/index.html', title=_('Homepage'), open_tickets=open_tickets,
                                model_list=part_models_list_for_chart)
     return render_template('main/index.html', title=_('Homepage'))
 

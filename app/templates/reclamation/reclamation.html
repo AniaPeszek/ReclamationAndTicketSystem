@@ -5,10 +5,10 @@
 
 {% block app_content %}
 
-    <div class="row" style="margin-left: 10% ">
-        <div class="col-lg-3">
+    <div class="row">
+        <div class="col-md-7">
             <h1>{{ _('Reclamation') }}</h1>
-            <h3>Requester: {{ requester }}</h3>
+            <h3>Requester: {{ requester }} </h3>
             <h3>Status: {{ status }}</h3>
 
             {% if close_form %}
@@ -22,8 +22,8 @@
     </div>
 
 
-    <div class="row justify-content-center">
-        <div class="col-2">
+    <div class="row">
+        <div class="col-md-5">
             <form method="POST">
                 {{ form.csrf_token() }}
                 {{ render_field(form.customer, horizontal_columns=('lg', 3, 9)) }}
@@ -41,7 +41,8 @@
 
         </div>
 
-        <div class="col-4">
+        <div class="col-md-7">
+        <div>
             <p><b>Tickets linked </b>
                 <a class="btn btn-primary btn-sm" role="button"
                    href="{{ url_for('ticket_bp.new_ticket', rec_id=rec.id) }}">
@@ -79,7 +80,8 @@
             </table>
         </div>
 
-        <div class="col-3">
+
+    <div style="margin-top: 20px !important;">
             <p><b>Notes</b></p>
             {% for note in notes %}
                 {% include 'reclamation/_note.html' %}
@@ -95,6 +97,8 @@
         </div>
 
     </div>
+    </div>
+
 {% endblock %}
 
 
