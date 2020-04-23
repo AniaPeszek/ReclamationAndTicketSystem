@@ -41,7 +41,7 @@ class ReclamationSchema(ma.SQLAlchemyAutoSchema):
         include_fk = True
         include_relationships = True
         load_instance = True
-        exclude = ('customer_id', 'part_sn_id', 'requester', 'tickets', 'reclamation_requester')
+        exclude = ('customer_id', 'part_sn_id', 'requester', 'tickets', 'reclamation_requester', 'note_rec')
 
     # reclamation_requester = fields.Nested(UserSchema, only=('username', 'first_name', 'last_name'))
     reclamation_customer = fields.Nested(CustomerSchema, only=('name',))

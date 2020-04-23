@@ -1,15 +1,18 @@
-from flask import render_template, flash, redirect, url_for, request, jsonify, current_app
+from flask import render_template, flash, redirect, url_for, request, jsonify, current_app, send_from_directory, abort
 from flask_babelex import _
 from flask_login import current_user, login_required
 from datetime import datetime
 
 from app import db
-from app.models import PartDetails, Reclamation, PartNo, Note
+from app.models import PartDetails, Reclamation, PartNo, Note, File
 from app.models_serialized import reclamation_schema
 from app.reclamation import bp
 from app.reclamation.forms import ReclamationForm, EditReclamationForm, ReadOnlyReclamationForm, CloseReclamationForm, \
     ReopenReclamationForm, NoteForm
 from app.users.notification import send_message
+
+from werkzeug.utils import secure_filename
+import os
 
 
 @bp.route('/reclamation', methods=['GET', 'POST'])
@@ -61,6 +64,7 @@ def reclamation(reclamation_number):
     open_form = ReopenReclamationForm()
     note_form = NoteForm()
     notes = Note.query.filter_by(rec_id=reclamation_number).all()
+    files = db.session.query(File).filter_by(reclamation_id=reclamation_number).all()
 
     part_details = db.session.query(PartDetails).filter_by(id=rec.reclamation_part_sn_id.id).first()
     person_in_charge = part_details.part_no.person_in_charge
@@ -162,10 +166,10 @@ def reclamation(reclamation_number):
     if current_user in users_who_can_edit:
         return render_template('reclamation/reclamation.html', form=form, requester=requester, status=status, rec=rec,
                                tickets=tickets, close_form=close_form, open_form=open_form, can_edit=True, notes=notes,
-                               note_form=note_form)
+                               note_form=note_form, files=files)
     else:
         return render_template('reclamation/reclamation.html', form=form, requester=requester, status=status, rec=rec,
-                               tickets=tickets, can_edit=False, notes=notes, note_form=note_form)
+                               tickets=tickets, can_edit=False, notes=notes, note_form=note_form, files=files)
 
 
 @bp.route('/all')
@@ -189,3 +193,66 @@ def reclamations_data():
 @login_required
 def reclamations_all():
     return render_template('reclamation/reclamations_all.html')
+
+
+def allowed_file(filename):
+    if not '.' in filename:
+        return False
+    extension = filename.rsplit('.', 1)[1].lower()
+    return extension in current_app.config['ALLOWED_EXTENSIONS']
+
+
+def allowed_filesize(filesize):
+    return int(filesize) <= current_app.config['MAX_FILE_FILESIZE']
+
+
+@bp.route('/upload_file/<int:rec_id>', methods=['GET', 'POST'])
+@login_required
+def upload_file(rec_id):
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        if request.files:
+            if not allowed_filesize(request.cookies.get("filesize")):
+                flash('File exceeded maximum size.')
+                return redirect(request.url)
+
+            file = request.files['file']
+            if file.filename == '':
+                flash('File must have a filename')
+                return redirect(request.url)
+
+            if not allowed_file(file.filename):
+                flash('That file extension is not allowed')
+                return redirect(request.url)
+            else:
+                filename = secure_filename(file.filename)
+                reclamation_id = rec_id
+                dirname = f'reclamation_{reclamation_id}'
+                dir_path = os.path.join(current_app.config['UPLOAD_FOLDER'], dirname)
+                if not os.path.exists(dir_path):
+                    os.mkdir(dir_path)
+
+                path = os.path.join(dir_path, filename)
+                file.save(path)
+
+                relative_path = os.path.join(dirname, filename)
+                file_data = File(name=filename, path=path, relative_path=relative_path, reclamation_id=reclamation_id)
+                db.session.add(file_data)
+                db.session.commit()
+
+                flash('File saved')
+                return redirect(url_for('reclamation_bp.reclamation', reclamation_number=reclamation_id))
+
+    return render_template('reclamation/upload_file.html', rec_id=rec_id)
+
+
+@bp.route('/get_file/<path:path>')
+@login_required
+def get_file(path):
+    path_to_uploads = os.path.join(current_app.config['UPLOAD_FOLDER'])
+    try:
+        return send_from_directory(path_to_uploads, filename=path, as_attachment=True)
+    except FileNotFoundError:
+        abort(404)

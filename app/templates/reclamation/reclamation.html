@@ -18,6 +18,7 @@
                     {{ render_form(open_form, form_type='horizontal', horizontal_columns=('lg', 0, 1)) }}
                 {% endif %}
             {% endif %}
+
         </div>
     </div>
 
@@ -39,64 +40,80 @@
                 {% endif %}
             </form>
 
+            <div>
+            <hr>
+            <a class="btn btn-primary" role="button"
+               href="{{ url_for('reclamation_bp.upload_file', rec_id=rec.id) }}">
+                {{ _('Add file to reclamation') }}</a>
+            {% if files %}
+            <p>{{ _('Attachments:') }}</p>
+                {% for file in files %}
+                {% include 'reclamation/_get_file.html' %}
+                    <br>
+                {% endfor %}
+            {% endif %}
+            </div>
+
         </div>
 
         <div class="col-md-7">
-        <div>
-            <p><b>Tickets linked </b>
-                <a class="btn btn-primary btn-sm" role="button"
-                   href="{{ url_for('ticket_bp.new_ticket', rec_id=rec.id) }}">
-                    {{ _('Create new ticket') }}</a>
-            </p>
-            <table class="table table-hover">
-                <thead>
-                <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col">Creation Date</th>
-                    <th scope="col">Description</th>
-                    <th scope="col">Status</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for ticket in tickets %}
+            <div>
+                <p><b>Tickets linked </b>
+                    <a class="btn btn-primary btn-sm" role="button"
+                       href="{{ url_for('ticket_bp.new_ticket', rec_id=rec.id) }}">
+                        {{ _('Create new ticket') }}</a>
+                </p>
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Creation Date</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for ticket in tickets %}
+                        {% if ticket.status == 0 %}
+                            <tr class="table-danger"
+                                data-href={{ url_for('ticket_bp.ticket', ticket_number=ticket.id) }}>
+                                {% else %}
+                            <tr class="table-success"
+                                data-href={{ url_for('ticket_bp.ticket', ticket_number=ticket.id) }}>
+                        {% endif %}
+
+                    <th scope="row">{{ ticket.id }}</th>
+                    <td>{{ ticket.creation_date.date() }}</td>
+                    <td>{{ ticket.description_ticket }}</td>
+
                     {% if ticket.status == 0 %}
-                        <tr class="table-danger" data-href={{ url_for('ticket_bp.ticket', ticket_number=ticket.id) }}>
-                            {% else %}
-                        <tr class="table-success" data-href={{ url_for('ticket_bp.ticket', ticket_number=ticket.id) }}>
+                        <td>Open</td>
+                    {% else %}
+                        <td>Closed</td>
                     {% endif %}
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-                <th scope="row">{{ ticket.id }}</th>
-                <td>{{ ticket.creation_date.date() }}</td>
-                <td>{{ ticket.description_ticket }}</td>
 
-                {% if ticket.status == 0 %}
-                    <td>Open</td>
-                {% else %}
-                    <td>Closed</td>
-                {% endif %}
-                </tr>
+            <div style="margin-top: 20px !important;">
+                <p><b>Notes</b></p>
+                {% for note in notes %}
+                    {% include 'reclamation/_note.html' %}
+                    <br>
                 {% endfor %}
-                </tbody>
-            </table>
+
+
+                <form method="POST">
+                    {{ form.csrf_token() }}
+                    {{ render_field(note_form.content, horizontal_columns=('lg', 3, 9)) }}
+                    {{ render_field(note_form.submit2) }}
+                </form>
+            </div>
+
         </div>
-
-
-    <div style="margin-top: 20px !important;">
-            <p><b>Notes</b></p>
-            {% for note in notes %}
-                {% include 'reclamation/_note.html' %}
-                <br>
-            {% endfor %}
-
-
-            <form method="POST">
-                {{ form.csrf_token() }}
-                {{ render_field(note_form.content, horizontal_columns=('lg', 3, 9)) }}
-                {{ render_field(note_form.submit2) }}
-            </form>
-        </div>
-
-    </div>
     </div>
 
 {% endblock %}

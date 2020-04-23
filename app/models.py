@@ -147,11 +147,6 @@ class User(UserMixin, db.Model):
             return
         return User.query.get(id)
 
-    def has_role(self, role):
-        if role == self.role:
-            return True
-        return False
-
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         if self.role is None:
@@ -177,6 +172,7 @@ class Reclamation(db.Model):
 
     tickets = db.relationship('Ticket', backref='reclamation', lazy='dynamic')
     note_rec = db.relationship('Note', backref='rec', lazy='dynamic')
+    files = db.relationship('File', backref='reclamation', lazy=True)
 
     def __init__(self, reclamation_requester, reclamation_customer, informed_date, reclamation_part_sn_id,
                  description_reclamation, due_date=None, finished_date=None):
@@ -353,3 +349,11 @@ class Notification(db.Model):
 
     def get_data(self):
         return json.loads(str(self.payload_json))
+
+
+class File(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64))
+    path = db.Column(db.String(300), unique=True)
+    relative_path = db.Column(db.String(300))
+    reclamation_id = db.Column(db.Integer, db.ForeignKey('reclamation.id'))

@@ -1,5 +1,6 @@
 from app import create_app, db
-from app.models import User, Customer, Note, PartDetails, PartNo, Reclamation, Team, Ticket, Message, Role, Notification
+from app.models import User, Customer, Note, PartDetails, PartNo, Reclamation, Team, Ticket, Message, Role, \
+    Notification, File
 from app.example_data.load_data import clear_data, upload_example_data
 
 app = create_app()
@@ -19,6 +20,7 @@ def make_shell_context():
             'Message': Message,
             'Role': Role,
             'Notification': Notification,
+            "File": File,
             'clear': clear_data,
             'upload': upload_example_data}
 

@@ -23,6 +23,11 @@ class Config:
 
     ELASTICSEARCH_URL = os.environ.get('ELASTICSEARCH_URL')
 
+    UPLOAD_FOLDER = os.path.join(basedir, 'app', 'static', 'uploads')
+    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'csv'}
+    MAX_FILE_FILESIZE = 5 * 1024 * 1024
+
+
 class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get(
