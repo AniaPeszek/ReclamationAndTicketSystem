@@ -229,6 +229,10 @@ def upload_file(rec_id):
             else:
                 filename = secure_filename(file.filename)
                 reclamation_id = rec_id
+                existing_filenames = get_filenames_for_reclamation(reclamation_id)
+                if filename in existing_filenames:
+                    flash('File with this name already exists. You can change name and try again.')
+                    return redirect(request.url)
                 dirname = f'reclamation_{reclamation_id}'
                 dir_path = os.path.join(current_app.config['UPLOAD_FOLDER'], dirname)
                 if not os.path.exists(dir_path):
@@ -256,3 +260,8 @@ def get_file(path):
         return send_from_directory(path_to_uploads, filename=path, as_attachment=True)
     except FileNotFoundError:
         abort(404)
+
+
+def get_filenames_for_reclamation(reclamation_id):
+    files = db.session.query(File.name).filter_by(reclamation_id=reclamation_id).all()
+    return [file[0] for file in files]
