@@ -134,7 +134,8 @@ def get_pie_chart_data():
 def search():
     if not g.search_form.validate():
         return redirect(url_for('main.index'))
-    serial_numbers, total = PartDetails.search(g.search_form.q.data, 1, 100)
-    results_q = len(serial_numbers[0].reclamation_p_sn.all())
+    serial_numbers, total = PartDetails.search(g.search_form.q.data)
+    results = [len(serial_numbers[i].reclamation_p_sn.all()) for i in range(total)]
 
-    return render_template('search/search.html', title='Search', serial_numbers=serial_numbers, results_q=results_q)
+    return render_template('search/search.html', title='Search', serial_numbers=serial_numbers, total=total,
+                           results=results)
