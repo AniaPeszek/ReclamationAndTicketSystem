@@ -1,134 +1,170 @@
 {% extends 'base.html' %}
 
 {% block styles %}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='/DataTables/datatables.min.css') }}"/>
-    <link rel="stylesheet" type="text/css"
-          href="{{ url_for('static', filename='/scripts/jquery-ui/jquery-ui.min.css') }}"/>
-    {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='/css/ticket_style.css') }}"/>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='/DataTables/datatables.min.css') }}" />
+<link rel="stylesheet" type="text/css"
+    href="{{ url_for('static', filename='/scripts/jquery-ui/jquery-ui.min.css') }}" />
+{{ super() }}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='/css/ticket_style.css') }}" />
 
 {% endblock %}
 
 {% block app_content %}
-    <div class="container">
-        <h1>{{ _('My tasks') }}</h1>
+<div class="container">
+    <h1>{{ _('My tasks') }}</h1>
 
-        <div id="baseDateControl" class="row">
-            <div class="col-lg-6">
-                <table class="table table-sm">
-                    <thead>
+    <div id="baseDateControl" class="row">
+        <div class="col-lg-6">
+            <table class="table table-sm">
+                <thead>
                     <tr>
                         <th scope="col">{{ _('Date filters') }}</th>
                         <th scope="col"></th>
                     </tr>
-                    </thead>
-                    <tbody>
+                </thead>
+                <tbody>
                     <tr>
                         <th scope="row">{{ _('Creation Date: ') }}</th>
                         <td>
                             {{ _('between ') }} <input type="text" name="dateStart" id="dateStart" class="datepicker"
-                                                       size="8"/>
+                                size="8" />
                             {{ _('and') }}
-                            <input type="text" name="dateEnd" id="dateEnd" class="datepicker" size="8"/>
+                            <input type="text" name="dateEnd" id="dateEnd" class="datepicker" size="8" />
                         </td>
                     </tr>
                     <tr>
                         <th scope="row">{{ _('Due Date: ') }}</th>
                         <td>
                             {{ _('between ') }} <input type="text" name="dateStart1" id="dateStart1" class="datepicker"
-                                                       size="8"/>
+                                size="8" />
                             {{ _('and') }}
-                            <input type="text" name="dateEnd1" id="dateEnd1" class="datepicker" size="8"/>
+                            <input type="text" name="dateEnd1" id="dateEnd1" class="datepicker" size="8" />
                         </td>
                     </tr>
                     <tr>
                         <th scope="row">{{ _('Finished Date: ') }}</th>
                         <td>
                             {{ _('between ') }} <input type="text" name="dateStart2" id="dateStart2" class="datepicker"
-                                                       size="8"/>
+                                size="8" />
                             {{ _('and') }}
-                            <input type="text" name="dateEnd2" id="dateEnd2" class="datepicker" size="8"/>
+                            <input type="text" name="dateEnd2" id="dateEnd2" class="datepicker" size="8" />
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <button type="button" id="clear">{{ _('Clear date filters ') }}</button>
+                            <button type="button" class='btn btn-secondary'
+                                id="clear">{{ _('Clear date filters ') }}</button>
                         </td>
                         <td></td>
                     </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="col-lg-3">
-                <table class="table table-sm">
-                    <thead>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-lg-3">
+            <table class="table table-sm">
+                <thead>
                     <tr>
                         <th scope="col">{{ _('Status filters') }}</th>
                         <th scope="col"></th>
                     </tr>
-                    </thead>
-                    <tbody>
+                </thead>
+                <tbody>
                     <tr>
-                        <td><div class="form-check form-check-inline">
-                            <input class="form-check-input" checked="checked" type="checkbox" id="openCheckbox"
-                                   value="open">
-                            <label class="form-check-label" for="inlineCheckbox1">{{ _('Open ') }}</label>
-                        </div>
+                        <td>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" checked="checked" type="checkbox" id="openCheckbox"
+                                    value="open">
+                                <label class="form-check-label" for="inlineCheckbox1">{{ _('Open ') }}</label>
+                            </div>
                         </td>
                         <td>
                             <div class="form-check form-check-inline">
-                            <input class="form-check-input" checked="checked" type="checkbox" id="closedCheckbox"
-                                   value="closed">
-                            <label class="form-check-label" for="inlineCheckbox1">{{ _('Closed ') }}</label>
+                                <input class="form-check-input" checked="checked" type="checkbox" id="closedCheckbox"
+                                    value="closed">
+                                <label class="form-check-label" for="inlineCheckbox1">{{ _('Closed ') }}</label>
                             </div>
                         </td>
                     </tr>
-                    </tbody>
-                </table>
+                </tbody>
+            </table>
+
+            <!-- Button trigger modal -->
+            <div>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                    {{_('Export table by email')}}
+                </button>
+
+                <!-- Modal -->
+                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
+                    aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">{{_('Export data by email')}}</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form id="export-form" action="" method="post"></form>
+                                <div class="modal-body">
+                                    {{_('You can enter your email address and you get .csv file with current data.')}}
+                                    <div>
+                                    <input type="email" placeholder="email" id='email' required/>    
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{_('Close')}}</button>
+                                    <div id="tableButtons" data-dismiss="modal"></div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </div>
 
-
-        <div>
-            <table class="table table-hover display" style="width:100%;" id="ticket_table">
-                <thead class="thead-dark">
-                <tr>
-                    <th scope="col">{{ _('ID') }}</th>
-                    <th scope="col">{{ _('Creation Date') }}</th>
-                    <th scope="col">{{ _('Due Date') }}</th>
-                    <th scope="col">{{ _('Finished Date') }}</th>
-                    <th scope="col">{{ _('Status') }}</th>
-                    <th scope="col">{{ _('Part Serial No.') }}</th>
-                    <th scope="col">{{ _('Reclamation Customer') }}</th>
-                    <th scope="col">{{ _('Reclamation ID') }}</th>
-                    <th scope="col">{{ _('Description') }}</th>
-                </tr>
-                </thead>
-
-                <tfoot>
-                <tr>
-                    <th scope="col">{{ _('ID') }}</th>
-                    <th scope="col">{{ _('Creation Date') }}</th>
-                    <th scope="col">{{ _('Due Date') }}</th>
-                    <th scope="col">{{ _('Finished Date') }}</th>
-                    <th scope="col">{{ _('Status') }}</th>
-                    <th scope="col">{{ _('Part Serial No.') }}</th>
-                    <th scope="col">{{ _('Reclamation Customer') }}</th>
-                    <th scope="col">{{ _('Reclamation ID') }}</th>
-                    <th scope="col">{{ _('Description') }}</th>
-                </tr>
-                </tfoot>
-            </table>
-        </div>
     </div>
+
+
+    <div>
+        <table class="table table-hover display" style="width:100%;" id="ticket_table">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">{{ _('ID') }}</th>
+                    <th scope="col">{{ _('Creation Date') }}</th>
+                    <th scope="col">{{ _('Due Date') }}</th>
+                    <th scope="col">{{ _('Finished Date') }}</th>
+                    <th scope="col">{{ _('Status') }}</th>
+                    <th scope="col">{{ _('Part Serial No.') }}</th>
+                    <th scope="col">{{ _('Reclamation Customer') }}</th>
+                    <th scope="col">{{ _('Reclamation ID') }}</th>
+                    <th scope="col">{{ _('Description') }}</th>
+                </tr>
+            </thead>
+
+            <tfoot>
+                <tr>
+                    <th scope="col">{{ _('ID') }}</th>
+                    <th scope="col">{{ _('Creation Date') }}</th>
+                    <th scope="col">{{ _('Due Date') }}</th>
+                    <th scope="col">{{ _('Finished Date') }}</th>
+                    <th scope="col">{{ _('Status') }}</th>
+                    <th scope="col">{{ _('Part Serial No.') }}</th>
+                    <th scope="col">{{ _('Reclamation Customer') }}</th>
+                    <th scope="col">{{ _('Reclamation ID') }}</th>
+                    <th scope="col">{{ _('Description') }}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
-    {{ super() }}
+{{ super() }}
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/jquery-ui/jquery-ui.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='DataTables/datatables.min.js') }}"></script>
 
-    <script type="text/javascript" src="{{ url_for('static', filename='DataTables/datatables.min.js') }}"></script>
-    <script type="text/javascript"
-            src="{{ url_for('static', filename='scripts/jquery-ui/jquery-ui.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='scripts/my_tickets_scripts.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/my_tickets_scripts.js') }}"></script>
 {% endblock %}

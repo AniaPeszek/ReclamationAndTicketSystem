@@ -126,6 +126,20 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
+
+        {% if current_user.is_authenticated %}
+        {% with tasks = current_user.get_tasks_in_progress() %}
+        {% if tasks %}
+            {% for task in tasks %}
+            <div class="alert alert-success" role="alert">
+                {{ task.description }}
+                <span id="{{ task.id }}-progress">{{ task.get_progress() }}</span>%
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+        {% endif %}
+
         {% block app_content %} {% endblock %}
     </div>
 {% endblock %}
@@ -156,11 +170,20 @@
                                 since = notifications[i].timestamp;
                                 if (notifications[i].name == 'open_tickets_count')
                                     set_ticket_count(notifications[i].data);
+                                if (notifications[i].name == 'task_progress')
+                                    set_task_progress(
+                                        notifications[i].data.task_id,
+                                        notifications[i].data.progress);
                             }
                         }
                     );
                 }, 100000);
             });
+
+            function set_task_progress(task_id, progress) {
+                $('#' + task_id + '-progress').text(progress);
+            }
+
         {% endif %}
     </script>
 {% endblock %}

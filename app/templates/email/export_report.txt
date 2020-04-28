@@ -1,0 +1,7 @@
+Dear {{ user.username }},
+
+Please find attached the archive of your tickets that you requested.
+
+If you have not asked for the report, ignore that e-mail.
+
+Admin

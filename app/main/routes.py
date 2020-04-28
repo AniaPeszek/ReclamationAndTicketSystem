@@ -1,4 +1,4 @@
-from flask import render_template, url_for, current_app, request, redirect
+from flask import render_template, url_for, current_app, request, redirect, flash
 
 from flask import g
 from flask_babelex import _, get_locale
@@ -13,6 +13,7 @@ from app.models import Message, Ticket, Reclamation, PartNo, PartDetails
 from datetime import datetime, timedelta
 
 from sqlalchemy import func
+import json
 
 
 @bp.before_app_request
@@ -138,3 +139,20 @@ def search():
     results_q = len(serial_numbers[0].reclamation_p_sn.all())
 
     return render_template('search/search.html', title='Search', serial_numbers=serial_numbers, results_q=results_q)
+
+
+@bp.route('/export_report', methods=['POST'])
+@login_required
+def export_report():
+
+    data = request.get_json()
+
+    # return jsonify({'data' :data})
+
+    if current_user.get_task_in_progress('export_report'):
+        flash(_('An export task is currently in progress'))
+    else:
+        current_user.launch_task('export_report', _('Exporting report...'), data)
+        db.session.commit()
+    return redirect(url_for('main.index'))
+

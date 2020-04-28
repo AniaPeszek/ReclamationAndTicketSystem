@@ -14,6 +14,9 @@ from config import Config
 from logging.handlers import SMTPHandler
 import logging
 
+from redis import Redis
+import rq
+
 db = SQLAlchemy()
 migrate = Migrate()
 bootstrap = Bootstrap()
@@ -41,6 +44,9 @@ def create_app(config_class=Config):
 
     app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']]) \
         if app.config['ELASTICSEARCH_URL'] else None
+
+    app.redis = Redis.from_url(app.config['REDIS_URL'])
+    app.task_queue = rq.Queue('erp-tasks', connection=app.redis)
 
     from app.search import bp as search_bp
     app.register_blueprint(search_bp)
