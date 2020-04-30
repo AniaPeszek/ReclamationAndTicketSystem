@@ -1,9 +1,9 @@
-import time
 import json
 import sys
 import csv
 import os
 import io
+import re
 from rq import get_current_job
 from app import create_app, db
 from app.models import Task, User, Ticket
@@ -35,12 +35,12 @@ def export_report(user_id, json_data):
     try:
         user = User.query.get(user_id)
         
-        # here we have to find other way to set progress
         _set_task_progress(0)
         
         data = json_data['table']
         address = json_data['mail']
-        # here we have to add a function to validate email address
+        if not validate_email(address):
+            raise ValueError('Invalid email address')
 
         _set_task_progress(10)
         msg = Message('ERP - Your report from ERP application',
@@ -68,3 +68,7 @@ def export_report(user_id, json_data):
     except:
         _set_task_progress(100)
         app.logger.error('Unhandled exception', exc_info=sys.exc_info())
+
+
+def validate_email(email):
+    return re.match(r"[^@]+@[^@]+\.[^@]+", email)

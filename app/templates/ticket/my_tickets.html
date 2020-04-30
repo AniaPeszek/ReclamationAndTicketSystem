@@ -88,39 +88,7 @@
                 </tbody>
             </table>
 
-            <!-- Button trigger modal -->
-            <div>
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
-                    {{_('Export table by email')}}
-                </button>
-
-                <!-- Modal -->
-                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
-                    aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalLabel">{{_('Export data by email')}}</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <form id="export-form" action="" method="post"></form>
-                                <div class="modal-body">
-                                    {{_('You can enter your email address and you get .csv file with current data.')}}
-                                    <div>
-                                    <input type="email" placeholder="email" id='email' required/>    
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{_('Close')}}</button>
-                                    <div id="tableButtons" data-dismiss="modal"></div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% include 'ticket/_modal.html'%}
 
         </div>
 

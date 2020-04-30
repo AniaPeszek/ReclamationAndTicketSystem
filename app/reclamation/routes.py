@@ -13,6 +13,8 @@ from app.users.notification import send_message
 
 from werkzeug.utils import secure_filename
 import os
+import secrets
+from string import ascii_letters
 
 
 @bp.route('/reclamation', methods=['GET', 'POST'])
@@ -233,15 +235,16 @@ def upload_file(rec_id):
                 if filename in existing_filenames:
                     flash('File with this name already exists. You can change name and try again.')
                     return redirect(request.url)
+                secure_dirname = ''.join(secrets.choice(ascii_letters) for _ in range(10))
                 dirname = f'reclamation_{reclamation_id}'
-                dir_path = os.path.join(current_app.config['UPLOAD_FOLDER'], dirname)
+                dir_path = os.path.join(current_app.config['UPLOAD_FOLDER'], dirname, secure_dirname)
                 if not os.path.exists(dir_path):
                     os.mkdir(dir_path)
 
                 path = os.path.join(dir_path, filename)
                 file.save(path)
 
-                relative_path = os.path.join(dirname, filename)
+                relative_path = os.path.join(dirname, secure_dirname, filename)
                 file_data = File(name=filename, path=path, relative_path=relative_path, reclamation_id=reclamation_id)
                 db.session.add(file_data)
                 db.session.commit()

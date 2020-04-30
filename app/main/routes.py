@@ -147,12 +147,11 @@ def export_report():
 
     data = request.get_json()
 
-    # return jsonify({'data' :data})
-
     if current_user.get_task_in_progress('export_report'):
         flash(_('An export task is currently in progress'))
     else:
         current_user.launch_task('export_report', _('Exporting report...'), data)
+        flash(_('Export has started.'))
         db.session.commit()
     return redirect(url_for('main.index'))
 

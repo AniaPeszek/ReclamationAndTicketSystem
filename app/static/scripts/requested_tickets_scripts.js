@@ -73,6 +73,40 @@ function setupData() {
 
         });
 
+        //button for export data
+        $.fn.dataTable.Buttons.defaults.dom.button.className = 'btn';
+        new $.fn.dataTable.Buttons($oTable, {
+            buttons: [{
+                text: 'Export data by email',
+                className: 'btn btn-primary',
+                action: function (e, $oTable, button, config) {
+                    var mail = document.getElementById('email').value;
+                    if (validateEmail(mail)){
+                    var jsonResult = $.ajax({
+                        "url": "/export_report",
+                        "type": "POST",
+                        "dataType": "json",
+                        "data": JSON.stringify({"table": $oTable.buttons.exportData(), "mail": mail}),
+                        "contentType": "application/json",
+                        success: function(response) {
+                            console.log(response);
+                        },
+                    });
+                    }else{
+                        alert('Please enter valid email address')
+                    }
+                }
+            }]
+        });
+        $oTable.buttons().container().appendTo('#tableButtons')
+
+        function validateEmail(email) 
+        {
+        var re = /\S+@\S+\.\S+/;
+        return re.test(email);
+        }
+
+
         //multi filter
         $oTable.columns().every(function () {
             var that = this;

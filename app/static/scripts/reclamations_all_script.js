@@ -20,7 +20,7 @@ function setupData() {
                 "contentType": "application/json"
             },
             "columns": [
-                {"data": "id"},
+                { "data": "id" },
                 {
                     "data": "informed_date", render: function (data) {
                         return moment(data).format('L')
@@ -49,8 +49,8 @@ function setupData() {
                         }
                     }
                 },
-                {"data": "reclamation_customer.name"},
-                {"data": "reclamation_part_sn_id.part_sn"},
+                { "data": "reclamation_customer.name" },
+                { "data": "reclamation_part_sn_id.part_sn" },
                 {
                     "data": "description_reclamation", render: function (data, type) {
                         return type === 'display' && data.length > 40 ?
@@ -66,6 +66,41 @@ function setupData() {
             "responsive": true,
 
         });
+
+
+        //button for export data
+        $.fn.dataTable.Buttons.defaults.dom.button.className = 'btn';
+        new $.fn.dataTable.Buttons($oTable, {
+            buttons: [{
+                text: 'Export data by email',
+                className: 'btn btn-primary',
+                action: function (e, $oTable, button, config) {
+                    var mail = document.getElementById('email').value;
+                    if (validateEmail(mail)) {
+                        var jsonResult = $.ajax({
+                            "url": "/export_report",
+                            "type": "POST",
+                            "dataType": "json",
+                            "data": JSON.stringify({ "table": $oTable.buttons.exportData(), "mail": mail }),
+                            "contentType": "application/json",
+                            success: function (response) {
+                                console.log(response);
+                            },
+                        });
+                    } else {
+                        alert('Please enter valid email address')
+                    }
+                }
+            }]
+        });
+        $oTable.buttons().container().appendTo('#tableButtons')
+
+        function validateEmail(email) {
+            var re = /\S+@\S+\.\S+/;
+            return re.test(email);
+        }
+
+
 
         //multi filter
         $oTable.columns().every(function () {
@@ -249,8 +284,8 @@ $(document).ready(function () {
         if (open && aData[4] === 'open' || closed && aData[4] === 'closed') {
             return true;
         }
-        if (open && closed){return true;}
-        if (!open && !closed){return false;}
+        if (open && closed) { return true; }
+        if (!open && !closed) { return false; }
         return false;
     });
 });
