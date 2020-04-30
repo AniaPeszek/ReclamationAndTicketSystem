@@ -119,6 +119,12 @@
 
 {% block content %}
     <div class="container" style="margin-top: 10px;">
+
+        {% if current_user.is_authenticated %}
+            <div class="alert alert-success" role="alert" id='progress-div' style="display: none;"></div>
+        {% endif %}
+
+
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
@@ -126,6 +132,8 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
+
+
         {% block app_content %} {% endblock %}
     </div>
 {% endblock %}
@@ -144,6 +152,22 @@
             $('#tickets_count').text(n + ' open');
         }
 
+        var tasks_list=[];
+        var time_refesh=$.now()/1000;
+        function set_task_progress(task_id, progress, timestamp) {
+            if (timestamp>=time_refesh){
+                $('#progress-div').show();
+                if ( $('#'+task_id).length ) {
+                    $('#'+task_id).html( "Exporting report ID "+task_id+': '+progress+'%');
+                }else{
+                    var task_span = document.createElement('span');
+                    task_span.id = task_id;
+                    task_span.innerHTML = "Exporting report ID "+task_id+': '+progress+'%';
+                    $('#progress-div').append(task_span);
+                }
+            }
+        }
+
         {% if current_user.is_authenticated %}
             $(function () {
                 var since = 0;
@@ -154,13 +178,23 @@
                                 if (notifications[i].name == 'unread_message_count')
                                     set_message_count(notifications[i].data);
                                 since = notifications[i].timestamp;
+                                if (notifications[i].name == 'task_progress')
+                                    set_task_progress(
+                                        notifications[i].data.task_id,
+                                        notifications[i].data.progress,
+                                        notifications[i].timestamp);    
+                                //since = notifications[i].timestamp;
                                 if (notifications[i].name == 'open_tickets_count')
                                     set_ticket_count(notifications[i].data);
+                                
                             }
                         }
                     );
-                }, 100000);
+                }, 1000);
             });
+
+            
+
         {% endif %}
     </script>
 {% endblock %}

@@ -24,8 +24,11 @@ class Config:
     ELASTICSEARCH_URL = os.environ.get('ELASTICSEARCH_URL')
 
     UPLOAD_FOLDER = os.path.join(basedir, 'app', 'static', 'uploads')
+    REPORTS_FOLDER = os.path.join(basedir, 'app', 'static', 'reports')
     ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'csv'}
     MAX_FILE_FILESIZE = 5 * 1024 * 1024
+
+    REDIS_URL = os.environ.get('REDIS_URL') or 'redis://localhost:6379'
 
 
 class TestingConfig(Config):
