@@ -245,7 +245,7 @@ def upload_file(rec_id):
                 file.save(path)
 
                 relative_path = os.path.join(dirname, secure_dirname, filename)
-                file_data = File(name=filename, path=path, relative_path=relative_path, reclamation_id=reclamation_id)
+                file_data = File(name=filename, relative_path=relative_path, reclamation_id=reclamation_id)
                 db.session.add(file_data)
                 db.session.commit()
 

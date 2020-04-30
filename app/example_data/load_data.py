@@ -81,7 +81,7 @@ def create_part_no():
               'Rear derailleur XTR-11', 'Rear derailleur RD-M970']
     persons_in_charge = []
     for i in range(10):
-        user = User.query.get(random.randint(3, 31))
+        user = User.query.get(random.randint(2, 31))
         persons_in_charge.append(user)
 
     for i in range(len(models)):
@@ -173,7 +173,7 @@ def create_ticket(description, reclamation, delay, customer_service=False, is_op
     if customer_service:
         assigned = User.query.get(random.randint(22, 31))
     else:
-        assigned = User.query.get(random.randint(3, 21))
+        assigned = User.query.get(random.randint(2, 21))
     requester = assigned.team.team_leader
     if is_open:
         finished_date = None

@@ -16,7 +16,7 @@ from app.search.search import add_to_index, remove_from_index, query_index
 class SearchableMixin(object):
     @classmethod
     def search(cls, expression):
-        ids, total = query_index(cls.__tablename__, expression)
+        ids, total = query_index(cls.__tablename__, expression.lower())
         if total == 0:
             return cls.query.filter_by(id=0), 0
         when = []
@@ -373,7 +373,6 @@ class Notification(db.Model):
 class File(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
-    path = db.Column(db.String(300), unique=True)
     relative_path = db.Column(db.String(300))
     reclamation_id = db.Column(db.Integer, db.ForeignKey('reclamation.id'))
 

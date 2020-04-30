@@ -1,8 +1,8 @@
-"""Initialize database
+"""init db after changes
 
-Revision ID: 8d1bafb286ae
+Revision ID: 31e39c44d629
 Revises: 
-Create Date: 2020-04-20 17:18:34.279403
+Create Date: 2020-04-30 12:52:52.606085
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '8d1bafb286ae'
+revision = '31e39c44d629'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -100,6 +100,16 @@ def upgrade():
     sa.ForeignKeyConstraint(['employee_id'], ['user.id'], ),
     sa.ForeignKeyConstraint(['supervisor_id'], ['user.id'], )
     )
+    op.create_table('task',
+    sa.Column('id', sa.String(length=36), nullable=False),
+    sa.Column('name', sa.String(length=128), nullable=True),
+    sa.Column('description', sa.String(length=128), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.Column('complete', sa.Boolean(), nullable=True),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_task_name'), 'task', ['name'], unique=False)
     op.create_table('part_details',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('part_no_id', sa.Integer(), nullable=True),
@@ -128,6 +138,14 @@ def upgrade():
     op.create_index(op.f('ix_reclamation_due_date'), 'reclamation', ['due_date'], unique=False)
     op.create_index(op.f('ix_reclamation_finished_date'), 'reclamation', ['finished_date'], unique=False)
     op.create_index(op.f('ix_reclamation_informed_date'), 'reclamation', ['informed_date'], unique=False)
+    op.create_table('file',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=64), nullable=True),
+    sa.Column('relative_path', sa.String(length=300), nullable=True),
+    sa.Column('reclamation_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['reclamation_id'], ['reclamation.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('note',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('drafter', sa.Integer(), nullable=True),
@@ -168,12 +186,15 @@ def downgrade():
     op.drop_table('ticket')
     op.drop_index(op.f('ix_note_creation_date'), table_name='note')
     op.drop_table('note')
+    op.drop_table('file')
     op.drop_index(op.f('ix_reclamation_informed_date'), table_name='reclamation')
     op.drop_index(op.f('ix_reclamation_finished_date'), table_name='reclamation')
     op.drop_index(op.f('ix_reclamation_due_date'), table_name='reclamation')
     op.drop_table('reclamation')
     op.drop_index(op.f('ix_part_details_production_date'), table_name='part_details')
     op.drop_table('part_details')
+    op.drop_index(op.f('ix_task_name'), table_name='task')
+    op.drop_table('task')
     op.drop_table('supervisor_table')
     op.drop_table('part_no')
     op.drop_index(op.f('ix_notification_timestamp'), table_name='notification')
