@@ -15,6 +15,7 @@ from werkzeug.utils import secure_filename
 import os
 import secrets
 from string import ascii_letters
+import json
 
 
 @bp.route('/reclamation', methods=['GET', 'POST'])
@@ -237,6 +238,10 @@ def upload_file(rec_id):
                     return redirect(request.url)
                 secure_dirname = ''.join(secrets.choice(ascii_letters) for _ in range(10))
                 dirname = f'reclamation_{reclamation_id}'
+
+                if not os.path.exists(os.path.join(current_app.config['UPLOAD_FOLDER'], dirname)):
+                    os.mkdir(os.path.join(current_app.config['UPLOAD_FOLDER'], dirname))
+
                 dir_path = os.path.join(current_app.config['UPLOAD_FOLDER'], dirname, secure_dirname)
                 if not os.path.exists(dir_path):
                     os.mkdir(dir_path)
@@ -268,3 +273,19 @@ def get_file(path):
 def get_filenames_for_reclamation(reclamation_id):
     files = db.session.query(File.name).filter_by(reclamation_id=reclamation_id).all()
     return [file[0] for file in files]
+
+
+@bp.route('/delete_file/<path:path>', methods=['DELETE'])
+@login_required
+def delete_file(path):
+    relative_path = path
+    path = os.path.join(current_app.config['UPLOAD_FOLDER'], path)
+    try:
+        if os.path.exists(path):
+            os.remove(path)
+        file_data = db.session.query(File).filter_by(relative_path=relative_path).first()
+        db.session.delete(file_data)
+        db.session.commit()
+        return json.dumps({'status':'OK'})
+    except Exception as e:
+        return json.dumps({'status':str(e)})

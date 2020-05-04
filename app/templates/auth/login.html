@@ -5,14 +5,40 @@
     <h1>{{ _('Sign in') }}</h1>
 
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-5">
             {{ render_form(form) }}
-        </div>
-    </div>
-
     <p>{{ _('Have you lost your password?') }}
         <a href="{{ url_for('auth.reset_password_request') }}">{{ _('Reset password') }}</a>
     </p>
+
+        </div>
+        <div class="col-md-7">
+            <h4>{{ _('Hello in our Reclamation and Ticket System.') }}</h4>
+            <div>
+                {{ _('If you want to try it, log in using any username below:') }}<br>
+                <b>liamsmith, davidrodriguez, jackyoung, lucaswilson,
+                williamwilliams, michaelwhite, owenwalker, henrymartin</b>.<br>
+                {{ _('Password: ') }}<b>secret</b>.<br>
+
+                {{ _('If you want to log in as an administrator and see the admin panel, 
+                log in using the username: ') }}<b>admin</b> {{ _(' and password: ') }}<b>admin</b>
+                {{ _('and click the link in the navigation bar.') }}<br><br>
+
+                {{ _('You can:')}}<br>
+                <ul>
+                    <li>{{ _('create claims and edit reclamations that you or your subordinate created,')}}</li>
+                    <li>{{ _('create tasks connected to the claim, edit them and open/close,')}}</li>
+                    <li>{{ _('add files to the reclamation,')}}</li>
+                    <li>{{ _('add comments/notes to the complaint,')}}</li>
+                    <li>{{ _('view all claims and tickets and filter this data,')}}</li>
+                    <li>{{ _('export .csv report with reclamations or tasks by email,')}}</li>
+                    <li>{{ _('search for details about a part by giving its serial number in search bar.')}}</li>
+                </ul>
+
+            </div>
+        </div>
+    </div>
+
 
 {% endblock %}
 
