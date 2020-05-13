@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import SubmitField, StringField, TextAreaField, validators
+from wtforms.validators import DataRequired
 from wtforms.fields.html5 import DateField, DateTimeField
 from wtforms_sqlalchemy.fields import QuerySelectField
 from wtforms_components import read_only
@@ -74,5 +75,5 @@ class ReopenReclamationForm(FlaskForm):
 
 
 class NoteForm(FlaskForm):
-    content = TextAreaField("Note")
+    content = TextAreaField("Note", validators=[DataRequired()])
     submit2 = SubmitField("Create a note")

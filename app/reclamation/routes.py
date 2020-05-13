@@ -286,6 +286,29 @@ def delete_file(path):
         file_data = db.session.query(File).filter_by(relative_path=relative_path).first()
         db.session.delete(file_data)
         db.session.commit()
-        return json.dumps({'status':'OK'})
+        return json.dumps({'status': 'OK'})
     except Exception as e:
-        return json.dumps({'status':str(e)})
+        return json.dumps({'status': str(e)})
+
+
+@bp.route('/edit_note/<note_id>', methods=['POST'])
+def edit_note(note_id):
+    try:
+        note_to_edit = Note.query.get(note_id)
+        data = request.get_json()
+        note_to_edit.content = data['note_text']
+        db.session.commit()
+        return json.dumps({'status': 'OK'})
+    except Exception as e:
+        return json.dumps({'status': str(e)})
+
+
+@bp.route('/delete_note/<note_id>', methods=['DELETE'])
+def delete_note(note_id):
+    try:
+        note_to_delete = Note.query.get(note_id)
+        db.session.delete(note_to_delete)
+        db.session.commit()
+        return json.dumps({'status': 'OK'})
+    except Exception as e:
+        return json.dumps({'status': str(e)})
