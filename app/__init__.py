@@ -23,7 +23,7 @@ bootstrap = Bootstrap()
 babel = Babel()
 mail = Mail()
 login = LoginManager()
-login.login_view = 'auth.login'
+login.login_view = "auth.login"
 moment = Moment()
 ma = Marshmallow()
 
@@ -42,48 +42,63 @@ def create_app(config_class=Config):
     moment.init_app(app)
     ma.init_app(app)
 
-    app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']]) \
-        if app.config['ELASTICSEARCH_URL'] else None
+    app.elasticsearch = (
+        Elasticsearch([app.config["ELASTICSEARCH_URL"]])
+        if app.config["ELASTICSEARCH_URL"]
+        else None
+    )
 
-    app.redis = Redis.from_url(app.config['REDIS_URL'])
-    app.task_queue = rq.Queue('erp-tasks', connection=app.redis)
+    app.redis = Redis.from_url(app.config["REDIS_URL"])
+    app.task_queue = rq.Queue("erp-tasks", connection=app.redis)
 
     from app.search import bp as search_bp
+
     app.register_blueprint(search_bp)
 
     from app.errors import bp as errors_bp
+
     app.register_blueprint(errors_bp)
 
     from app.main import bp as main_bp
+
     app.register_blueprint(main_bp)
 
     from app.auth import bp as auth_bp
-    app.register_blueprint(auth_bp, url_prefix='/auth')
 
-    f_admin = Admin(app, name='ERP - Admin', index_view=MyAdminIndexView(), template_mode='bootstrap3')
+    app.register_blueprint(auth_bp, url_prefix="/auth")
+
+    f_admin = Admin(
+        app,
+        name="ERP - Admin",
+        index_view=MyAdminIndexView(),
+        template_mode="bootstrap3",
+    )
     init_admin(f_admin)
 
     from app.users import bp as users_bp
-    app.register_blueprint(users_bp, url_prefix='/users')
+
+    app.register_blueprint(users_bp, url_prefix="/users")
 
     from app.reclamation import bp as reclamation_bp
+
     app.register_blueprint(reclamation_bp)
 
     from app.ticket import bp as ticket_bp
+
     app.register_blueprint(ticket_bp)
 
     if not app.debug and not app.testing:
-        if app.config['MAIL_SERVER']:
+        if app.config["MAIL_SERVER"]:
             auth = None
-            if app.config['MAIL_USERNAME'] or app.config['MAIL_PASSWORD']:
-                auth = (app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-            if app.config['MAIL_USE_TLS']:
+            if app.config["MAIL_USERNAME"] or app.config["MAIL_PASSWORD"]:
+                auth = (app.config["MAIL_USERNAME"], app.config["MAIL_PASSWORD"])
+            if app.config["MAIL_USE_TLS"]:
                 secure = ()
             mail_handler = SMTPHandler(
-                mailhost=(app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
-                fromaddr='no-reply@' + app.config['MAIL_SERVER'],
-                toaddrs=app.config['ADMINS'],
-                subject='ERP error',
+                mailhost=(app.config["MAIL_SERVER"], app.config["MAIL_PORT"]),
+                fromaddr="no-reply@" + app.config["MAIL_SERVER"],
+                toaddrs=app.config["ADMINS"],
+                subject="ERP error",
                 credentials=auth,
             )
             mail_handler.setLevel(logging.ERROR)
@@ -94,7 +109,7 @@ def create_app(config_class=Config):
 
 @babel.localeselector
 def get_locale():
-    return 'en'
+    return "en"
 
 
 from app import models

@@ -41,14 +41,25 @@ class ReclamationSchema(ma.SQLAlchemyAutoSchema):
         include_fk = True
         include_relationships = True
         load_instance = True
-        exclude = ('customer_id', 'part_sn_id', 'requester', 'tickets', 'reclamation_requester', 'note_rec')
+        exclude = (
+            "customer_id",
+            "part_sn_id",
+            "requester",
+            "tickets",
+            "reclamation_requester",
+            "note_rec",
+        )
 
     # reclamation_requester = fields.Nested(UserSchema, only=('username', 'first_name', 'last_name'))
-    reclamation_customer = fields.Nested(CustomerSchema, only=('name',))
-    #how to show part model?
-    reclamation_part_sn_id = fields.Nested(PartDetailsSchema, only=('part_sn', 'part_no.model'))
+    reclamation_customer = fields.Nested(CustomerSchema, only=("name",))
+    # how to show part model?
+    reclamation_part_sn_id = fields.Nested(
+        PartDetailsSchema, only=("part_sn", "part_no.model")
+    )
 
-    _links = Hyperlinks({'self': URLFor('reclamation_bp.reclamation', reclamation_number='<id>')})
+    _links = Hyperlinks(
+        {"self": URLFor("reclamation_bp.reclamation", reclamation_number="<id>")}
+    )
 
 
 class TicketSchema(ma.SQLAlchemyAutoSchema):
@@ -58,9 +69,13 @@ class TicketSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
         include_fk = True
 
-    ticket_assigned = fields.Nested(UserSchema, only=('username', 'first_name', 'last_name'))
-    reclamation = fields.Nested(ReclamationSchema, only=('reclamation_customer','reclamation_part_sn_id'))
-    _links = Hyperlinks({'self': URLFor('ticket_bp.ticket', ticket_number='<id>')})
+    ticket_assigned = fields.Nested(
+        UserSchema, only=("username", "first_name", "last_name")
+    )
+    reclamation = fields.Nested(
+        ReclamationSchema, only=("reclamation_customer", "reclamation_part_sn_id")
+    )
+    _links = Hyperlinks({"self": URLFor("ticket_bp.ticket", ticket_number="<id>")})
 
 
 user_schema = UserSchema(many=True)

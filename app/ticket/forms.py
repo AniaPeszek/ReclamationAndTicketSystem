@@ -9,58 +9,76 @@ from app.models import User, Reclamation
 
 
 class TicketForm(FlaskForm):
-    assigned_employee = QuerySelectField('Assigned Person',
-                                         query_factory=lambda: db.session.query(User).order_by('last_name'),
-                                         get_pk=lambda a: a.id,
-                                         get_label=lambda a: str(a.first_name) + " " + str(a.last_name),
-                                         allow_blank=True)
-    reclamation = QuerySelectField('Reclamation',
-                                   query_factory=lambda: db.session.query(Reclamation).order_by('due_date'),
-                                   get_pk=lambda a: a.id,
-                                   get_label=lambda a: str(a.id) + " " + str(
-                                       a.reclamation_customer.name) + " " + str(a.reclamation_part_sn_id.part_sn),
-                                   allow_blank=True)
-    due_date = DateField('Due Date', format='%Y-%m-%d')
-    description_ticket = TextAreaField('Description of the ticket')
+    assigned_employee = QuerySelectField(
+        "Assigned Person",
+        query_factory=lambda: db.session.query(User).order_by("last_name"),
+        get_pk=lambda a: a.id,
+        get_label=lambda a: str(a.first_name) + " " + str(a.last_name),
+        allow_blank=True,
+    )
+    reclamation = QuerySelectField(
+        "Reclamation",
+        query_factory=lambda: db.session.query(Reclamation).order_by("due_date"),
+        get_pk=lambda a: a.id,
+        get_label=lambda a: str(a.id)
+        + " "
+        + str(a.reclamation_customer.name)
+        + " "
+        + str(a.reclamation_part_sn_id.part_sn),
+        allow_blank=True,
+    )
+    due_date = DateField("Due Date", format="%Y-%m-%d")
+    description_ticket = TextAreaField("Description of the ticket")
 
-    submit = SubmitField('Create a ticket')
+    submit = SubmitField("Create a ticket")
 
 
 class EditTicketForm(FlaskForm):
-    assigned_employee = QuerySelectField('Assigned Person',
-                                         query_factory=lambda: db.session.query(User).order_by('last_name'),
-                                         get_pk=lambda a: a.id,
-                                         get_label=lambda a: str(a.first_name) + " " + str(a.last_name),
-                                         allow_blank=True)
-    reclamation = QuerySelectField('Reclamation',
-                                   query_factory=lambda: db.session.query(Reclamation).order_by('due_date'),
-                                   get_pk=lambda a: a.id,
-                                   get_label=lambda a: str(a.id) + " " + str(
-                                       a.reclamation_customer.name) + " " + str(a.reclamation_part_sn_id.part_sn),
-                                   allow_blank=True)
-    due_date = DateField('Due Date', format='%Y-%m-%d')
-    description_ticket = TextAreaField('Description of the ticket')
-    finished_date = DateTimeField('Finished Date', format='%Y-%m-%d %H:%M', render_kw={'readonly': True},
-                                  validators=[validators.Optional()])
+    assigned_employee = QuerySelectField(
+        "Assigned Person",
+        query_factory=lambda: db.session.query(User).order_by("last_name"),
+        get_pk=lambda a: a.id,
+        get_label=lambda a: str(a.first_name) + " " + str(a.last_name),
+        allow_blank=True,
+    )
+    reclamation = QuerySelectField(
+        "Reclamation",
+        query_factory=lambda: db.session.query(Reclamation).order_by("due_date"),
+        get_pk=lambda a: a.id,
+        get_label=lambda a: str(a.id)
+        + " "
+        + str(a.reclamation_customer.name)
+        + " "
+        + str(a.reclamation_part_sn_id.part_sn),
+        allow_blank=True,
+    )
+    due_date = DateField("Due Date", format="%Y-%m-%d")
+    description_ticket = TextAreaField("Description of the ticket")
+    finished_date = DateTimeField(
+        "Finished Date",
+        format="%Y-%m-%d %H:%M",
+        render_kw={"readonly": True},
+        validators=[validators.Optional()],
+    )
 
 
 class CloseTicketForm(FlaskForm):
-    submit1 = SubmitField('Close ticket')
+    submit1 = SubmitField("Close ticket")
 
 
 class ReopenTicketForm(FlaskForm):
-    submit1 = SubmitField('Re-open ticket')
+    submit1 = SubmitField("Re-open ticket")
 
 
 class RequesterTicketForm(EditTicketForm):
-    submit = SubmitField('Edit a ticket')
+    submit = SubmitField("Edit a ticket")
 
     def __init__(self, *args, **kwargs):
         super(RequesterTicketForm, self).__init__(*args, **kwargs)
 
 
 class AssignedUserTicketForm(EditTicketForm):
-    submit = SubmitField('Edit a ticket')
+    submit = SubmitField("Edit a ticket")
 
     def __init__(self, *args, **kwargs):
         super(AssignedUserTicketForm, self).__init__(*args, **kwargs)

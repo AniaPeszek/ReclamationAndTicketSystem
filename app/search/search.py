@@ -20,12 +20,7 @@ def query_index(index, query):
     if not current_app.elasticsearch:
         return [], 0
     search = current_app.elasticsearch.search(
-        index=index,
-        body={'query':
-                  {'wildcard':
-                       {'part_sn': query}
-                   }
-              }
+        index=index, body={"query": {"wildcard": {"part_sn": query}}}
     )
-    ids = [int(hit['_id']) for hit in search['hits']['hits']]
-    return ids, search['hits']['total']['value']
+    ids = [int(hit["_id"]) for hit in search["hits"]["hits"]]
+    return ids, search["hits"]["total"]["value"]

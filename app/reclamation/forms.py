@@ -10,47 +10,59 @@ from app.models import Customer, PartNo, Reclamation
 
 
 class ReclamationForm(FlaskForm):
-    customer = QuerySelectField('Customer',
-                                query_factory=lambda: db.session.query(Customer).order_by('name'),
-                                get_pk=lambda a: a.id,
-                                get_label=lambda a: a.name,
-                                allow_blank=True)
+    customer = QuerySelectField(
+        "Customer",
+        query_factory=lambda: db.session.query(Customer).order_by("name"),
+        get_pk=lambda a: a.id,
+        get_label=lambda a: a.name,
+        allow_blank=True,
+    )
 
-    informed_date = DateField('Informed Date', format='%Y-%m-%d')
-    due_date = DateField('Due Date', format='%Y-%m-%d')
-    part_model = QuerySelectField('Part Model',
-                                  query_factory=lambda: db.session.query(PartNo).order_by('model'),
-                                  get_pk=lambda a: a.id,
-                                  get_label=lambda a: a.model,
-                                  allow_blank=True)
-    part_sn = StringField('Serial Number')
-    part_prod_date = DateField('Part Production Date', format='%Y-%m-%d')
-    description = TextAreaField('Description of the issue')
+    informed_date = DateField("Informed Date", format="%Y-%m-%d")
+    due_date = DateField("Due Date", format="%Y-%m-%d")
+    part_model = QuerySelectField(
+        "Part Model",
+        query_factory=lambda: db.session.query(PartNo).order_by("model"),
+        get_pk=lambda a: a.id,
+        get_label=lambda a: a.model,
+        allow_blank=True,
+    )
+    part_sn = StringField("Serial Number")
+    part_prod_date = DateField("Part Production Date", format="%Y-%m-%d")
+    description = TextAreaField("Description of the issue")
 
-    submit = SubmitField('Create a claim')
+    submit = SubmitField("Create a claim")
 
 
 class EditReclamationForm(FlaskForm):
-    customer = QuerySelectField('Customer',
-                                query_factory=lambda: db.session.query(Customer).order_by('name'),
-                                get_pk=lambda a: a.id,
-                                get_label=lambda a: a.name,
-                                allow_blank=True)
+    customer = QuerySelectField(
+        "Customer",
+        query_factory=lambda: db.session.query(Customer).order_by("name"),
+        get_pk=lambda a: a.id,
+        get_label=lambda a: a.name,
+        allow_blank=True,
+    )
 
-    informed_date = DateField('Informed Date', format='%Y-%m-%d')
-    due_date = DateField('Due Date', format='%Y-%m-%d')
-    part_model = QuerySelectField('Part Model',
-                                  query_factory=lambda: db.session.query(PartNo).order_by('model'),
-                                  get_pk=lambda a: a.id,
-                                  get_label=lambda a: a.model,
-                                  allow_blank=True)
-    part_sn = StringField('Serial Number')
-    part_prod_date = DateField('Part Production Date', format='%Y-%m-%d')
-    description = TextAreaField('Description of the issue')
-    finished_date = DateTimeField('Finished Date', format='%Y-%m-%d %H:%M', validators=[validators.Optional()],
-                                  render_kw={'readonly': True})
+    informed_date = DateField("Informed Date", format="%Y-%m-%d")
+    due_date = DateField("Due Date", format="%Y-%m-%d")
+    part_model = QuerySelectField(
+        "Part Model",
+        query_factory=lambda: db.session.query(PartNo).order_by("model"),
+        get_pk=lambda a: a.id,
+        get_label=lambda a: a.model,
+        allow_blank=True,
+    )
+    part_sn = StringField("Serial Number")
+    part_prod_date = DateField("Part Production Date", format="%Y-%m-%d")
+    description = TextAreaField("Description of the issue")
+    finished_date = DateTimeField(
+        "Finished Date",
+        format="%Y-%m-%d %H:%M",
+        validators=[validators.Optional()],
+        render_kw={"readonly": True},
+    )
 
-    submit = SubmitField('Edit the claim')
+    submit = SubmitField("Edit the claim")
 
 
 class ReadOnlyReclamationForm(EditReclamationForm):
@@ -67,11 +79,11 @@ class ReadOnlyReclamationForm(EditReclamationForm):
 
 
 class CloseReclamationForm(FlaskForm):
-    submit1 = SubmitField('Close reclamation')
+    submit1 = SubmitField("Close reclamation")
 
 
 class ReopenReclamationForm(FlaskForm):
-    submit1 = SubmitField('Re-open reclamation')
+    submit1 = SubmitField("Re-open reclamation")
 
 
 class NoteForm(FlaskForm):

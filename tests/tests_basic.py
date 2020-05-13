@@ -26,8 +26,8 @@ class ConfigurationTestCase(BaseTestCase):
         self.assertFalse(current_app is None)
 
     def test_app_is_testing_conf(self):
-        self.assertTrue(current_app.config['TESTING'])
+        self.assertTrue(current_app.config["TESTING"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

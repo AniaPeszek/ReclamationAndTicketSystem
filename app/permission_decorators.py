@@ -10,11 +10,13 @@ def permission_required(permission):
         def decorated_function(*args, **kwargs):
             if not current_user.is_authenticated:
                 next = url_for(request.endpoint, **request.view_args)
-                return redirect(url_for('auth.login', next=next))
+                return redirect(url_for("auth.login", next=next))
             if not current_user.can(permission):
                 abort(403)
             return f(*args, **kwargs)
+
         return decorated_function
+
     return decorator
 
 
