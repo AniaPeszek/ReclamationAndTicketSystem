@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    $("#delete_file").click(function () {
+    $(".del-file").click(function () {
         var path = $(this).val();
         $(this).closest('.file-div').hide();
 

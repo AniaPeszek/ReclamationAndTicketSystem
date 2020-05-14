@@ -376,6 +376,9 @@ def delete_file(path):
     try:
         if os.path.exists(path):
             os.remove(path)
+            print(os.path.dirname(path))
+            if not os.listdir(os.path.dirname(path)):
+                os.rmdir(os.path.dirname(path))
         file_data = (
             db.session.query(File).filter_by(relative_path=relative_path).first()
         )

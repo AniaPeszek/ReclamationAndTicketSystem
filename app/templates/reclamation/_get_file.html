@@ -1,11 +1,11 @@
 <div class='file-div'><a href="/get_file/{{file.relative_path|safe}}">{{ file.name }}</a>
 <!-- Button trigger modal -->
-    <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#myModal">
+    <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#modal{{file.id}}">
         <i class="fa fa-trash"></i>
     </button>
 
     <!-- Modal -->
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+    <div class="modal fade" id="modal{{file.id}}" tabindex="-1" role="dialog"
         aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -20,7 +20,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" data-dismiss="modal">{{_('Cancel')}}</button>
-                    <button type="button" class="btn btn-danger" id="delete_file" data-dismiss="modal" value='{{file.relative_path|safe}}'>
+                    <button type="button" class="btn btn-danger del-file" data-dismiss="modal" value='{{file.relative_path|safe}}'>
                         {{_('Delete')}}</button>
                 </div>
             </div>
